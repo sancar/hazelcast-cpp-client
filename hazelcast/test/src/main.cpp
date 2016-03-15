@@ -47,15 +47,13 @@ int main(int argc, char **argv) {
     IMap<std::string, std::string> map = client.getMap<std::string, std::string>("Hashname");
     while (1) {
         std::cout << "ITERATION " << count++ << std::endl;
-        map.put("Key", str);
-        boost::shared_ptr<std::string> value = map.get("Key");
+        boost::shared_ptr<std::string> value = map.put("Key", str);
         if (NULL != value.get()) {
             util::ILogger::getLogger().info(std::string("First get value:") + *value);
         } else {
             util::ILogger::getLogger().info("First get value is NULL ");
         }
-        map.put("Key", json_str);
-        value = map.get("Key");
+        value = map.put("Key", json_str);
         if (NULL != value.get()) {
             util::ILogger::getLogger().info(std::string("Second get value:") + *value);
         } else {
