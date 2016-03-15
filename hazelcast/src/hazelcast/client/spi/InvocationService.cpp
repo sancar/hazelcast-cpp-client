@@ -264,7 +264,6 @@ namespace hazelcast {
 
             void InvocationService::handleMessage(connection::Connection &connection,
                                                   std::auto_ptr<protocol::ClientMessage> message) {
-                std::cout << "get callid" << message->getMessageType() << " " << message->getCorrelationId() << std::endl;
                 int64_t correlationId = message->getCorrelationId();
                 if (message->isFlagSet(protocol::ClientMessage::LISTENER_EVENT_FLAG)) {
                     boost::shared_ptr<connection::CallPromise> promise = getEventHandlerPromise(connection,

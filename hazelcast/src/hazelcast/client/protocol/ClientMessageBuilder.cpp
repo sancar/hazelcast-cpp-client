@@ -24,6 +24,7 @@
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/util/ByteBuffer.h"
+#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -57,14 +58,17 @@ namespace hazelcast {
                         if (message->isFlagSet(ClientMessage::BEGIN_AND_END_FLAGS)) {
                             //MESSAGE IS COMPLETE HERE
                             if (messageHandler) {
+                                std::cout << "get type " << message->getMessageType() << ", call id" << message->getCorrelationId() << " frame length " << message->getFrameLength()<< std::endl;
                                 messageHandler->handleMessage(connection, message);
                             }
                             isCompleted = true;
                         } else {
                             if (message->isFlagSet(ClientMessage::BEGIN_FLAG)) {
+                                std::cout << "BEGIN IS NOT SET " << std::endl;
                                 // put the message into the partial messages list
                                 addToPartialMessages(message);
                             } else if (message->isFlagSet(ClientMessage::END_FLAG)) {
+                                std::cout << "END IS NOT SET " << std::endl;
                                 // This is the intermediate frame. Append at the previous message buffer
                                 appendExistingPartialMessage(message);
                                 isCompleted = true;
