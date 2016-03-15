@@ -57,7 +57,7 @@ namespace hazelcast {
                     if (offset == frameLen) {
                         if (message->isFlagSet(ClientMessage::BEGIN_AND_END_FLAGS)) {
                             //MESSAGE IS COMPLETE HERE
-                            std::cout << "get type " << message->getMessageType() << ", call id" << message->getCorrelationId() << " frame length " << message->getFrameLength() << std::endl;
+                            std::cout << "get type " << message->getMessageType() << ", call id : " << message->getCorrelationId() << " frame length " << message->getFrameLength() << std::endl;
                             messageHandler->handleMessage(connection, message);
                             isCompleted = true;
                         } else {
@@ -73,6 +73,8 @@ namespace hazelcast {
                                 isCompleted = true;
                             }
                         }
+                    } else{
+                        std::cout << " offset != framelength isCompleted : " << isCompleted << std::endl;
                     }
                 }
 
