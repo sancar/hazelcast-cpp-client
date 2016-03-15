@@ -18,7 +18,6 @@
 
 #include "HazelcastServerFactory.h"
 #include "SimpleMapTest.h"
-#include "hazelcast/client/HazelcastAll.h"
 
 namespace hazelcast {
     namespace client {
@@ -45,20 +44,10 @@ int main(int argc, char **argv) {
     std::cout << "JSON LENGTH " << json_str.length() << std::endl;
     int count = 0;
     IMap<std::string, std::string> map = client.getMap<std::string, std::string>("Hashname");
+    map.put("Key", json_str);
     while (1) {
         std::cout << "ITERATION " << count++ << std::endl;
-        boost::shared_ptr<std::string> value = map.put("Key", str);
-        if (NULL != value.get()) {
-            util::ILogger::getLogger().info(std::string("First get value:") + *value);
-        } else {
-            util::ILogger::getLogger().info("First get value is NULL ");
-        }
-        value = map.put("Key", json_str);
-        if (NULL != value.get()) {
-            util::ILogger::getLogger().info(std::string("Second get value:") + *value);
-        } else {
-            util::ILogger::getLogger().info("Second get value is NULL ");
-        }
+        map.get("Key");
     } // end of while
     return 0;
 }
