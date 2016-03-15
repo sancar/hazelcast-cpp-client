@@ -29,7 +29,7 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            ClientMessageBuilder::ClientMessageBuilder(IMessageHandler *service, connection::Connection &connection)
+            ClientMessageBuilder::ClientMessageBuilder(IMessageHandler *service, connection::Connection& connection)
             : messageHandler(service), connection(connection) {
             }
 
@@ -39,12 +39,12 @@ namespace hazelcast {
                 }
             }
 
-            bool ClientMessageBuilder::onData(util::ByteBuffer &buffer) {
+            bool ClientMessageBuilder::onData(util::ByteBuffer& buffer) {
                 bool isCompleted = false;
 
                 if (NULL == message.get()) {
                     if (buffer.remaining() >= ClientMessage::HEADER_SIZE) {
-                        wrapperMessage.wrapForDecode((byte *) buffer.ix(), (int32_t) buffer.remaining(), false);
+                        wrapperMessage.wrapForDecode((byte *)buffer.ix(), (int32_t)buffer.remaining(), false);
                         frameLen = wrapperMessage.getFrameLength();
                         message = ClientMessage::create(frameLen);
                         offset = 0;
@@ -57,12 +57,11 @@ namespace hazelcast {
                     if (offset == frameLen) {
                         if (message->isFlagSet(ClientMessage::BEGIN_AND_END_FLAGS)) {
                             //MESSAGE IS COMPLETE HERE
-                            if (messageHandler) {
-                                std::cout << "get type " << message->getMessageType() << ", call id" << message->getCorrelationId() << " frame length " << message->getFrameLength()<< std::endl;
-                                messageHandler->handleMessage(connection, message);
-                            }
+                            std::cout << "get type " << message->getMessageType() << ", call id" << message->getCorrelationId() << " frame length " << message->getFrameLength() << std::endl;
+                            messageHandler->handleMessage(connection, message);
                             isCompleted = true;
                         } else {
+                            std::cout << " BEGIN_AND_END_FLAGS NOT SET " << std::endl;
                             if (message->isFlagSet(ClientMessage::BEGIN_FLAG)) {
                                 std::cout << "BEGIN IS NOT SET " << std::endl;
                                 // put the message into the partial messages list
@@ -97,9 +96,7 @@ namespace hazelcast {
 
                         partialMessages.erase(foundItemIter, foundItemIter);
 
-                        if (messageHandler) {
-                            messageHandler->handleMessage(connection, foundMessage);
-                        }
+                        messageHandler->handleMessage(connection, foundMessage);
 
                         result = true;
                     }
