@@ -42,11 +42,9 @@ int main(int argc, char **argv) {
     clientConfig.setLogLevel(FINEST);
     HazelcastClient client(clientConfig);
     std::cout << "JSON LENGTH " << json_str.length() << std::endl;
-    int count = 0;
     IMap<std::string, std::string> map = client.getMap<std::string, std::string>("Hashname");
     map.put("Key", json_str);
     while (1) {
-        std::cout << "ITERATION " << count++ << std::endl;
         map.get("Key");
     } // end of while
     return 0;
