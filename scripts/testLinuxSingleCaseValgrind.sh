@@ -11,18 +11,24 @@ function cleanup {
 }
 
 trap cleanup EXIT
+for i in "$@"
+do
+	case $i in
+		--gtest_filter=*)
+		FILTER_EXPRESSION=$i
+		;;
+		--valgrind-options=*)
+		VALGRIND_OPTIONS=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+		;;
+		*)
+				# unknown option
+		;;
+	esac
+done
 
 HZ_BIT_VERSION=64
 HZ_LIB_TYPE=SHARED
 HZ_BUILD_TYPE=Debug
-
-if [ "$4" == "WITH_COVERAGE" ]; then
-    if [ ${HZ_BUILD_TYPE} != Debug ]; then
-            echo "WITH_COVERAGE is requested. The build type should be Debug but it is provided as ${HZ_BUILD_TYPE}."
-            exit 1
-    fi
-    HZ_COVERAGE_STRING="-DHZ_CODE_COVERAGE=ON"
-fi
 
 HZ_COMPILE_WITH_SSL=ON
 
@@ -35,10 +41,6 @@ echo HZ_LIB_TYPE=${HZ_LIB_TYPE}
 echo HZ_BUILD_TYPE=${HZ_BUILD_TYPE}
 echo BUILD_DIR=${BUILD_DIR}
 echo EXECUTABLE_NAME=${EXECUTABLE_NAME}
-
-if [ "$4" == "WITH_COVERAGE" ]; then
-echo "Code coverage is ON. Cmake flag: ${HZ_COVERAGE_STRING}"
-fi
 
 # Let the submodule code be downloaded
 git submodule update --init
@@ -105,7 +107,7 @@ fi
 cd ..
 
 echo "Starting the client test now."
-valgrind --leak-check=full --read-var-info=yes --track-origins=yes --gen-suppressions=all ${BUILD_DIR}/hazelcast/test/src/${EXECUTABLE_NAME} --gtest_filter=RawPointerMapTest.* --gtest_output="xml:CPP_Client_Test_Report.xml" &
+valgrind --leak-check=full --read-var-info=yes --track-origins=yes --gen-suppressions=all ${VALGRIND_OPTIONS} ${BUILD_DIR}/hazelcast/test/src/${EXECUTABLE_NAME} ${FILTER_EXPRESSION} --gtest_output="xml:CPP_Client_Test_Report.xml" &
 testPid=$!
 wait ${testPid}
 result=$?
