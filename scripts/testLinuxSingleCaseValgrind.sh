@@ -105,7 +105,7 @@ fi
 cd ..
 
 echo "Starting the client test now."
-valgrind --leak-check=full --read-var-info=yes  --gen-suppressions=all ${BUILD_DIR}/hazelcast/test/src/${EXECUTABLE_NAME} --gtest_filter=RawPointerMapTest.* --gtest_output="xml:CPP_Client_Test_Report.xml" &
+valgrind --leak-check=full --read-var-info=yes --track-origins=yes --gen-suppressions=all ${BUILD_DIR}/hazelcast/test/src/${EXECUTABLE_NAME} --gtest_filter=RawPointerMapTest.* --gtest_output="xml:CPP_Client_Test_Report.xml" &
 testPid=$!
 wait ${testPid}
 result=$?
