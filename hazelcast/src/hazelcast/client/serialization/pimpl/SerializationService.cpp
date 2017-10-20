@@ -697,6 +697,35 @@ namespace hazelcast {
                 const byte SerializationService::getVersion() const {
                     return 1;
                 }
+
+                ObjectType SerializationService::getObjectType(const Data *data) {
+                    ObjectType type;
+
+                    if (NULL == data) {
+                        return type;
+                    }
+
+                    type.typeId = data->getType();
+
+                    // Constant 4 is Data::TYPE_OFFSET. Windows DLL export does not
+                    // let usage of static member.
+                    DataInput dataInput(data->toByteArray(), 4);
+
+                    ObjectDataInput objectDataInput(dataInput, portableContext);
+
+                    if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId) {
+                        bool identified = objectDataInput.readBoolean();
+                        if (!identified) {
+                            throw exception::HazelcastSerializationException("SerializationService::getObjectType",
+                                                                             " DataSerializable is not identified");
+                        }
+                    }
+
+                    type.factoryId = objectDataInput.readInt();
+                    type.classId = objectDataInput.readInt();
+
+                    return type;
+                }
             }
         }
     }

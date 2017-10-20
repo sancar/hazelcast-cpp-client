@@ -55,9 +55,19 @@ namespace hazelcast {
 
         namespace serialization {
             namespace pimpl {
+                struct HAZELCAST_API ObjectType {
+                    ObjectType() : typeId(0), factoryId(-1), classId(-1) {}
+
+                    ObjectType(int32_t typeId, int32_t factoryId, int32_t classId) : typeId(typeId), factoryId(factoryId),
+                                                                                     classId(classId) {}
+
+                    int32_t typeId;
+                    int32_t factoryId;
+                    int32_t classId;
+                };
+
                 class HAZELCAST_API SerializationService {
                 public:
-
                     SerializationService(const SerializationConfig& serializationConfig);
 
                     /**
@@ -126,6 +136,7 @@ namespace hazelcast {
 
                     const byte getVersion() const;
 
+                    ObjectType getObjectType(const Data *data);
                 private:
                     SerializerHolder &getSerializerHolder();
 
