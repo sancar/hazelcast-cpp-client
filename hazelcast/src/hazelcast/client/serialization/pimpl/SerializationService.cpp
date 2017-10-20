@@ -721,8 +721,11 @@ namespace hazelcast {
                         }
                     }
 
-                    type.factoryId = objectDataInput.readInt();
-                    type.classId = objectDataInput.readInt();
+                    if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId ||
+                            SerializationConstants::CONSTANT_TYPE_PORTABLE == type.typeId) {
+                        type.factoryId = objectDataInput.readInt();
+                        type.classId = objectDataInput.readInt();
+                    }
 
                     return type;
                 }
