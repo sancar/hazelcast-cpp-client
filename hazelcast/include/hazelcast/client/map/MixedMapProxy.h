@@ -600,7 +600,7 @@ namespace hazelcast {
                 template <typename K>
                 std::map<TypedData, TypedData> getAll(const std::set<K> &keys) {
                     if (keys.empty()) {
-                        return std::map<K, TypedData>();
+                        return std::map<TypedData, TypedData>();
                     }
 
                     std::map<int, std::vector<std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > > > partitionToKeyData;

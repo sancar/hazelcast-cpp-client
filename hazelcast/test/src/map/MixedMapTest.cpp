@@ -17,7 +17,6 @@
 #include "ClientTestSupport.h"
 
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
 
@@ -58,7 +57,73 @@ namespace hazelcast {
                     instance2 = NULL;
                     instance = NULL;
                 }
-                
+
+                class Base : public serialization::IdentifiedDataSerializable {
+                public:
+                    virtual ~Base() {}
+
+                    virtual const char *getName() {
+                        return "base";
+                    }
+
+                    virtual int getFactoryId() const {
+                        return 666;
+                    }
+
+                    virtual int getClassId() const {
+                        return 10;
+                    }
+
+                    virtual void writeData(serialization::ObjectDataOutput &writer) const {
+                    }
+
+                    virtual void readData(serialization::ObjectDataInput &reader) {
+                    }
+                };
+
+                class Derived1 : public Base {
+                public:
+                    virtual const char *getName() {
+                        return "derived1";
+                    }
+
+                    virtual int getFactoryId() const {
+                        return 666;
+                    }
+
+                    virtual int getClassId() const {
+                        return 11;
+                    }
+
+                    virtual void writeData(serialization::ObjectDataOutput &writer) const {
+                    }
+
+                    virtual void readData(serialization::ObjectDataInput &reader) {
+                    }
+                };
+
+                class Derived2 : public Derived1 {
+                public:
+                    virtual const char *getName() {
+                        return "derived2";
+                    }
+
+                    virtual int getFactoryId() const {
+                        return 666;
+                    }
+
+                    virtual int getClassId() const {
+                        return 12;
+                    }
+
+                    virtual void writeData(serialization::ObjectDataOutput &writer) const {
+                    }
+
+                    virtual void readData(serialization::ObjectDataInput &reader) {
+                    }
+                };
+
+
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
                 static ClientConfig *clientConfig;
@@ -91,6 +156,56 @@ namespace hazelcast {
                 ASSERT_EQ("MyStringValue", *strValue);
             }
 
+            TEST_F(MixedMapTest, testPolyMorphismWithIdentifiedDataSerializable) {
+                Base base;
+                Derived1 derived1;
+                Derived2 derived2;
+                mixedMap->put<int, Base>(1, base);
+                mixedMap->put<int, Derived1>(2, derived1);
+                mixedMap->put<int, Derived2>(3, derived2);
+
+                std::set<int> keys;
+                keys.insert(1);
+                keys.insert(2);
+                keys.insert(3);
+
+                std::map<TypedData, TypedData> values = mixedMap->getAll<int>(keys);
+                for (std::map<TypedData, TypedData>::iterator it = values.begin();it != values.end(); ++it) {
+                    const TypedData &keyData = it->first;
+                    TypedData &valueData = it->second;
+                    std::auto_ptr<int> key = (const_cast<TypedData &>(keyData)).get<int>();
+                    ASSERT_NE((int *)NULL, key.get());
+                    switch (*key) {
+                        case 1: {
+                            // serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA, using -2 since static
+                            // variable is not exported into the library
+                            ASSERT_EQ(-2, valueData.getType().typeId);
+                            std::auto_ptr<Base> value = valueData.get<Base>();
+                            ASSERT_NE((Base *)NULL, value.get());
+                            ASSERT_EQ(base.getName(), value->getName());
+                            break;
+                        }
+                        case 2: {
+                            // serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA
+                            ASSERT_EQ(-2, valueData.getType().typeId);
+                            std::auto_ptr<Base> value(valueData.get<Derived1>());
+                            ASSERT_NE((Base *)NULL, value.get());
+                            ASSERT_EQ(derived1.getName(), value->getName());
+                            break;
+                        }
+                        case 3: {
+                            // serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA
+                            ASSERT_EQ(-2, valueData.getType().typeId);
+                            std::auto_ptr<Base> value(valueData.get<Derived2>());
+                            ASSERT_NE((Base *)NULL, value.get());
+                            ASSERT_EQ(derived2.getName(), value->getName());
+                            break;
+                        }
+                        default:
+                            FAIL();
+                    }
+                }
+            }
         }
     }
 }

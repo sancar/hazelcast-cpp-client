@@ -576,6 +576,72 @@ class MapGetInterceptor implements MapInterceptor, IdentifiedDataSerializable {
     }
 }
 
+class Base implements IdentifiedDataSerializable {
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 10;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput objectDataOutput)
+            throws IOException {
+    }
+
+    @Override
+    public void readData(ObjectDataInput objectDataInput)
+            throws IOException {
+    }
+}
+
+class Derived1 extends Base {
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 11;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput objectDataOutput)
+            throws IOException {
+    }
+
+    @Override
+    public void readData(ObjectDataInput objectDataInput)
+            throws IOException {
+    }
+}
+
+class Derived2 extends Derived1 {
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 12;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput objectDataOutput)
+            throws IOException {
+    }
+
+    @Override
+    public void readData(ObjectDataInput objectDataInput)
+            throws IOException {
+    }
+}
+
 public class CppClientListener {
 
     static final int OK = 5678;
@@ -709,6 +775,12 @@ public class CppClientListener {
                         return new WaitMultiplierProcessor();
                     case 9:
                         return new UTFValueValidatorProcessor();
+                    case 10:
+                        return new Base();
+                    case 11:
+                        return new Derived1();
+                    case 12:
+                        return new Derived2();
                     default:
                         return null;
                 }
