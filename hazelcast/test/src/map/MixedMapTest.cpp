@@ -42,6 +42,7 @@ namespace hazelcast {
                     clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                     client = new HazelcastClient(*clientConfig);
                     mixedMap = new map::MixedMapProxy(client->getMixedMap("MixedMap"));
+                    map::MixedMapProxy myMixedMap = client->getMixedMap("MyMixedMap");
                 }
 
                 static void TearDownTestCase() {
@@ -62,10 +63,6 @@ namespace hazelcast {
                 public:
                     virtual ~Base() {}
 
-                    virtual const char *getName() {
-                        return "base";
-                    }
-
                     virtual int getFactoryId() const {
                         return 666;
                     }
@@ -80,49 +77,53 @@ namespace hazelcast {
                     virtual void readData(serialization::ObjectDataInput &reader) {
                     }
                 };
-
+                
                 class Derived1 : public Base {
                 public:
-                    virtual const char *getName() {
-                        return "derived1";
-                    }
-
-                    virtual int getFactoryId() const {
-                        return 666;
-                    }
-
                     virtual int getClassId() const {
                         return 11;
-                    }
-
-                    virtual void writeData(serialization::ObjectDataOutput &writer) const {
-                    }
-
-                    virtual void readData(serialization::ObjectDataInput &reader) {
                     }
                 };
 
                 class Derived2 : public Derived1 {
                 public:
-                    virtual const char *getName() {
-                        return "derived2";
+                    virtual int getClassId() const {
+                        return 12;
                     }
+                };
+
+                class BasePortable : public serialization::Portable {
+                public:
+                    virtual ~BasePortable() {}
 
                     virtual int getFactoryId() const {
                         return 666;
                     }
 
                     virtual int getClassId() const {
-                        return 12;
+                        return 3;
                     }
 
-                    virtual void writeData(serialization::ObjectDataOutput &writer) const {
+                    virtual void writePortable(serialization::PortableWriter &writer) const {
                     }
 
-                    virtual void readData(serialization::ObjectDataInput &reader) {
+                    virtual void readPortable(serialization::PortableReader &reader) {
                     }
                 };
 
+                class Derived1Portable : public BasePortable {
+                public:
+                    virtual int getClassId() const {
+                        return 4;
+                    }
+                };
+
+                class Derived2Portable : public BasePortable {
+                public:
+                    virtual int getClassId() const {
+                        return 5;
+                    }
+                };
 
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
@@ -169,36 +170,96 @@ namespace hazelcast {
                 keys.insert(2);
                 keys.insert(3);
 
-                std::map<TypedData, TypedData> values = mixedMap->getAll<int>(keys);
-                for (std::map<TypedData, TypedData>::iterator it = values.begin();it != values.end(); ++it) {
-                    const TypedData &keyData = it->first;
-                    TypedData &valueData = it->second;
-                    std::auto_ptr<int> key = (const_cast<TypedData &>(keyData)).get<int>();
+                std::vector<std::pair<TypedData, TypedData> > values = mixedMap->getAll<int>(keys);
+                for (std::vector<std::pair<TypedData, TypedData> >::iterator it = values.begin();it != values.end(); ++it) {
+                    TypedData &keyData = (*it).first;
+                    TypedData &valueData = (*it).second;
+                    std::auto_ptr<int> key = keyData.get<int>();
                     ASSERT_NE((int *)NULL, key.get());
+                    serialization::pimpl::ObjectType objectType = valueData.getType();
                     switch (*key) {
                         case 1: {
                             // serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA, using -2 since static
                             // variable is not exported into the library
-                            ASSERT_EQ(-2, valueData.getType().typeId);
+                            ASSERT_EQ(-2, objectType.typeId);
+                            ASSERT_EQ(666, objectType.factoryId);
+                            ASSERT_EQ(10, objectType.classId);
                             std::auto_ptr<Base> value = valueData.get<Base>();
                             ASSERT_NE((Base *)NULL, value.get());
-                            ASSERT_EQ(base.getName(), value->getName());
                             break;
                         }
                         case 2: {
-                            // serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA
-                            ASSERT_EQ(-2, valueData.getType().typeId);
+                            ASSERT_EQ(-2, objectType.typeId);
+                            ASSERT_EQ(666, objectType.factoryId);
+                            ASSERT_EQ(11, objectType.classId);
                             std::auto_ptr<Base> value(valueData.get<Derived1>());
                             ASSERT_NE((Base *)NULL, value.get());
-                            ASSERT_EQ(derived1.getName(), value->getName());
                             break;
                         }
                         case 3: {
-                            // serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA
-                            ASSERT_EQ(-2, valueData.getType().typeId);
+                            ASSERT_EQ(-2, objectType.typeId);
+                            ASSERT_EQ(666, objectType.factoryId);
+                            ASSERT_EQ(12, objectType.classId);
                             std::auto_ptr<Base> value(valueData.get<Derived2>());
                             ASSERT_NE((Base *)NULL, value.get());
-                            ASSERT_EQ(derived2.getName(), value->getName());
+                            break;
+                        }
+                        default:
+                            FAIL();
+                    }
+                }
+            }
+
+            TEST_F(MixedMapTest, testPolyMorphismWithPortable) {
+                BasePortable base;
+                Derived1Portable derived1;
+                Derived2Portable derived2;
+                mixedMap->put<int, BasePortable>(1, base);
+                mixedMap->put<int, Derived1Portable>(2, derived1);
+                mixedMap->put<int, Derived2Portable>(3, derived2);
+
+                TypedData secondData = mixedMap->get<int>(2);
+                serialization::pimpl::ObjectType secondType = secondData.getType();
+                ASSERT_EQ(-1, secondType.typeId);
+                secondData.get<Derived1Portable>();
+                
+                std::set<int> keys;
+                keys.insert(1);
+                keys.insert(2);
+                keys.insert(3);
+
+                std::vector<std::pair<TypedData, TypedData> > values = mixedMap->getAll<int>(keys);
+                for (std::vector<std::pair<TypedData, TypedData> >::iterator it = values.begin();it != values.end(); ++it) {
+                    TypedData &keyData = (*it).first;
+                    TypedData &valueData = (*it).second;
+                    std::auto_ptr<int> key = keyData.get<int>();
+                    ASSERT_NE((int *)NULL, key.get());
+                    serialization::pimpl::ObjectType objectType = valueData.getType();
+                    switch (*key) {
+                        case 1: {
+                            // serialization::pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE, using -1 since static
+                            // variable is not exported into the library
+                            ASSERT_EQ(-1, objectType.typeId);
+                            ASSERT_EQ(666, objectType.factoryId);
+                            ASSERT_EQ(3, objectType.classId);
+                            std::auto_ptr<BasePortable> value = valueData.get<BasePortable>();
+                            ASSERT_NE((BasePortable *)NULL, value.get());
+                            break;
+                        }
+                        case 2: {
+                            ASSERT_EQ(-1, objectType.typeId);
+                            ASSERT_EQ(666, objectType.factoryId);
+                            ASSERT_EQ(4, objectType.classId);
+                            std::auto_ptr<BasePortable> value(valueData.get<Derived1Portable>());
+                            ASSERT_NE((BasePortable *)NULL, value.get());
+                            break;
+                        }
+                        case 3: {
+                            ASSERT_EQ(-1, objectType.typeId);
+                            ASSERT_EQ(666, objectType.factoryId);
+                            ASSERT_EQ(5, objectType.classId);
+                            std::auto_ptr<BasePortable> value(valueData.get<Derived2Portable>());
+                            ASSERT_NE((BasePortable *)NULL, value.get());
                             break;
                         }
                         default:

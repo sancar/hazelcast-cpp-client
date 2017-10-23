@@ -68,18 +68,6 @@ namespace hazelcast {
             std::auto_ptr<serialization::pimpl::Data> data;
             serialization::pimpl::SerializationService *ss;
         };
-
-        inline bool operator < (const TypedData &lhs, const TypedData &rhs) {
-            if (!lhs.getData()) {
-                return true;
-            }
-
-            if (rhs.getData()) {
-                return false;
-            }
-
-            return lhs.getData()->getPartitionHash() < rhs.getData()->getPartitionHash();
-        }
     }
 }
 

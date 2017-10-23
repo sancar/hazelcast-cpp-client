@@ -600,45 +600,51 @@ class Base implements IdentifiedDataSerializable {
 
 class Derived1 extends Base {
     @Override
-    public int getFactoryId() {
-        return 666;
-    }
-
-    @Override
     public int getId() {
         return 11;
-    }
-
-    @Override
-    public void writeData(ObjectDataOutput objectDataOutput)
-            throws IOException {
-    }
-
-    @Override
-    public void readData(ObjectDataInput objectDataInput)
-            throws IOException {
     }
 }
 
 class Derived2 extends Derived1 {
     @Override
+    public int getId() {
+        return 12;
+    }
+}
+
+class BasePortable implements Portable  {
+    @Override
     public int getFactoryId() {
         return 666;
     }
 
     @Override
-    public int getId() {
-        return 12;
+    public int getClassId() {
+        return 3;
     }
 
     @Override
-    public void writeData(ObjectDataOutput objectDataOutput)
+    public void writePortable(PortableWriter portableWriter)
             throws IOException {
     }
 
     @Override
-    public void readData(ObjectDataInput objectDataInput)
+    public void readPortable(PortableReader portableReader)
             throws IOException {
+    }
+}
+
+class Derived1Portable extends BasePortable {
+    @Override
+    public int getClassId() {
+        return 4;
+    }
+}
+
+class Derived2Portable extends BasePortable {
+    @Override
+    public int getClassId() {
+        return 5;
     }
 }
 
@@ -750,6 +756,12 @@ public class CppClientListener {
                     return new SampleRunnableTask();
                 } else if (classId == 2) {
                     return new Employee();
+                } else if (classId == 3) {
+                    return new BasePortable();
+                } else if (classId == 4) {
+                    return new Derived1Portable();
+                } else if (classId == 5) {
+                    return new Derived2Portable();
                 }
                 return null;
             }

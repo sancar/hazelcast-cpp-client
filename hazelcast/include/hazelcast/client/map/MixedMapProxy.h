@@ -598,9 +598,9 @@ namespace hazelcast {
                 * @return map of entries
                 */
                 template <typename K>
-                std::map<TypedData, TypedData> getAll(const std::set<K> &keys) {
+                std::vector<std::pair<TypedData, TypedData> > getAll(const std::set<K> &keys) {
                     if (keys.empty()) {
-                        return std::map<TypedData, TypedData>();
+                        return std::vector<std::pair<TypedData, TypedData> >();
                     }
 
                     std::map<int, std::vector<std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > > > partitionToKeyData;
@@ -613,13 +613,14 @@ namespace hazelcast {
                         partitionToKeyData[partitionId].push_back(std::make_pair(&(*it), toShared(keyData)));
                     }
 
-                    std::map<TypedData, TypedData> result;
+                    std::vector<std::pair<TypedData, TypedData> > result;
                     EntryVector entries = getAllInternal<K>(partitionToKeyData);
                     for (EntryVector::iterator it = entries.begin();it != entries.end(); ++it) {
                         std::auto_ptr<serialization::pimpl::Data> keyData(new serialization::pimpl::Data(it->first));
                         std::auto_ptr<serialization::pimpl::Data> valueData(new serialization::pimpl::Data(it->second));
-                        result[TypedData(keyData, context->getSerializationService())] = TypedData(valueData,
-                                                                                                   context->getSerializationService());
+                        result.push_back(std::make_pair<TypedData, TypedData>(
+                                TypedData(keyData, context->getSerializationService()),
+                                TypedData(valueData, context->getSerializationService())));
                     }
                     return result;
                 }

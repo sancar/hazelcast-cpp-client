@@ -713,16 +713,18 @@ namespace hazelcast {
 
                     ObjectDataInput objectDataInput(dataInput, portableContext);
 
-                    if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId) {
-                        bool identified = objectDataInput.readBoolean();
-                        if (!identified) {
-                            throw exception::HazelcastSerializationException("SerializationService::getObjectType",
-                                                                             " DataSerializable is not identified");
-                        }
-                    }
-
                     if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId ||
                             SerializationConstants::CONSTANT_TYPE_PORTABLE == type.typeId) {
+                        assert(type.typeId == objectDataInput.readInt());
+
+                        if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId) {
+                            bool identified = objectDataInput.readBoolean();
+                            if (!identified) {
+                                throw exception::HazelcastSerializationException("SerializationService::getObjectType",
+                                                                                 " DataSerializable is not identified");
+                            }
+                        }
+
                         type.factoryId = objectDataInput.readInt();
                         type.classId = objectDataInput.readInt();
                     }
