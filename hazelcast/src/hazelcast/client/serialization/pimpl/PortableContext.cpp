@@ -38,10 +38,11 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableContext::PortableContext(int version, const SerializationConstants& constants)
-                : contextVersion(version), serializerHolder(*this) , constants(constants){
+                PortableContext::PortableContext(int version, const SerializationConstants& constants,
+                                                 const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &dataSerializableFactories,
+                                                 const std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > &portableFactories)
+                : contextVersion(version), serializerHolder(*this, dataSerializableFactories) , constants(constants), portableFactories(portableFactories) {
                 }
-
 
                 int PortableContext::getClassVersion(int factoryId, int classId) {
                     return getClassDefinitionContext(factoryId).getClassVersion(classId);
@@ -159,6 +160,10 @@ namespace hazelcast {
                         }
                     }
                     return *value;
+                }
+
+                const map<int32_t, boost::shared_ptr<PortableFactory> > &PortableContext::getPortableFactories() const {
+                    return portableFactories;
                 }
 
             }

@@ -21,6 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
+#include <hazelcast/client/serialization/pimpl/ConstantSerializers.h>
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -36,9 +37,13 @@ namespace hazelcast {
                     return std::auto_ptr<type >(); \
                 }
 
-                SerializationService::SerializationService(const SerializationConfig& serializationConfig)
-                : portableContext(serializationConfig.getPortableVersion(), constants)
-                , serializationConfig(serializationConfig) {
+                SerializationService::SerializationService(const SerializationConfig &serializationConfig)
+                        : portableContext(serializationConfig.getPortableVersion(), constants,
+                                          serializationConfig.getDataSerializableFactories(),
+                                          serializationConfig.getPortableFactories()),
+                          serializationConfig(serializationConfig) {
+                    registerConstantSerializers();
+
                     std::vector<boost::shared_ptr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
                     std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;
                     SerializerHolder& serializerHolder = getSerializerHolder();
@@ -730,6 +735,12 @@ namespace hazelcast {
                     }
 
                     return type;
+                }
+
+                void SerializationService::registerConstantSerializers() {
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::ByteSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::BooleanSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::IntegerSerializer));
                 }
             }
         }

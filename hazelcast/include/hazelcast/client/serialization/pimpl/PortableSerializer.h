@@ -62,12 +62,16 @@ namespace hazelcast {
 
                     void read(DataInput &in, Portable &p, int factoryId, int classId) const;
 
+                    std::auto_ptr<Portable> read(DataInput &in);
+
                 private:
                     PortableContext& context;
 
                     int findPortableVersion(int factoryId, int classId, const Portable& portable) const;
 
                     PortableReader createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion) const;
+
+                    std::auto_ptr<Portable> createNewPortableInstance(int32_t factoryId, int32_t classId);
                 };
 
             }

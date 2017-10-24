@@ -16,18 +16,15 @@
 //
 // Created by sancar koyunlu on 7/31/13.
 
-
-
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
-#include "hazelcast/client/serialization/Serializer.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                SerializerHolder::SerializerHolder(PortableContext&context)
-                :portableSerializer(context) {
-
+                SerializerHolder::SerializerHolder(PortableContext &context,
+                        const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &dataSerializableFactories)
+                :portableSerializer(context), dataSerializer(dataSerializableFactories) {
                 }
 
                 bool SerializerHolder::registerSerializer(boost::shared_ptr<SerializerBase> serializer) {

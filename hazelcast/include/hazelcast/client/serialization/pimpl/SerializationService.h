@@ -167,6 +167,8 @@ namespace hazelcast {
                     void writeHash(const void *obj, DataOutput &out) {
                         out.writeInt(0);
                     }
+
+                    void registerConstantSerializers();
                 };
 
                 template<>

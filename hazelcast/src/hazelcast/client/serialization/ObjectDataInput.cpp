@@ -128,9 +128,8 @@ namespace hazelcast {
             }
 
             void ObjectDataInput::readPortable(Portable * object) {
-                int factoryId = readInt();
-                int classId = readInt();
-                serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId);
+                serializerHolder.getPortableSerializer().read(dataInput, *object, object->getFactoryId(),
+                                                              object->getClassId());
             }
 
             void ObjectDataInput::readDataSerializable(IdentifiedDataSerializable * object) {
@@ -138,6 +137,11 @@ namespace hazelcast {
                 serializerHolder.getDataSerializer().read(input, *object);
             }
 
+            pimpl::DataInput &ObjectDataInput::getDataInput() const {
+                return dataInput;
+            }
+
+/*
             template <>
             void ObjectDataInput::readInternal(int typeId, byte *object) {
                 *object = readByte();
@@ -182,6 +186,7 @@ namespace hazelcast {
             void ObjectDataInput::readInternal(int typeId, std::string *object) {
                 *object = *readUTF();
             }
+*/
         }
     }
 }

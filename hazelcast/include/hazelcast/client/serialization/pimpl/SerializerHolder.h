@@ -44,7 +44,8 @@ namespace hazelcast {
                 class HAZELCAST_API SerializerHolder {
 
                 public:
-                    SerializerHolder(PortableContext &context);
+                    SerializerHolder(PortableContext &context,
+                                     const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &dataSerializableFactories);
 
                     bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
 
