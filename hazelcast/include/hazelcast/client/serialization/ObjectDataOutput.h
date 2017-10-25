@@ -190,7 +190,7 @@ namespace hazelcast {
                         writeInt(object->getFactoryId());
                         writeInt(object->getClassId());
 
-                        context->getSerializerHolder().getPortableSerializer().write(*this->dataOutput, *object);
+                        context->getSerializerHolder().getPortableSerializer().write(*this, *object);
                     }
                 }
 
@@ -331,6 +331,9 @@ namespace hazelcast {
                         writeUTF(object);
                     }
                 }
+
+                pimpl::DataOutput *getDataOutput() const;
+
             private:
                 pimpl::DataOutput *dataOutput;
                 pimpl::PortableContext *context;

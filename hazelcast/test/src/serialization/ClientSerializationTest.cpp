@@ -550,9 +550,9 @@ namespace hazelcast {
 
             TEST_F(ClientSerializationTest, ObjectDataInputOutput) {
                 serialization::pimpl::SerializationConstants constants;
-                std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > dataFactories;
-                std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > portableFactories;
-                serialization::pimpl::PortableContext context(1, constants, dataFactories, portableFactories);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::PortableContext context(serializationConfig, constants);
 
                 serialization::pimpl::DataOutput dataOutput;
                 serialization::ObjectDataOutput out(dataOutput, context);
@@ -665,9 +665,9 @@ namespace hazelcast {
                 std::string utfStr = "xyzä123";
 
                 serialization::pimpl::SerializationConstants constants;
-                std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > dataFactories;
-                std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > portableFactories;
-                serialization::pimpl::PortableContext context(1, constants, dataFactories, portableFactories);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::PortableContext context(serializationConfig, constants);
 
                 serialization::pimpl::DataOutput dataOutput;
                 serialization::ObjectDataOutput out(dataOutput, context);

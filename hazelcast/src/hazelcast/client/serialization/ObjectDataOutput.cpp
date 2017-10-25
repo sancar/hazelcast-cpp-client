@@ -33,7 +33,6 @@ namespace hazelcast {
 
             ObjectDataOutput::ObjectDataOutput()
                     : dataOutput(NULL), context(NULL), serializerHolder(NULL), isEmpty(true) {
-
             }
 
             std::auto_ptr<std::vector<byte> > ObjectDataOutput::toByteArray() {
@@ -171,6 +170,10 @@ namespace hazelcast {
 
             void ObjectDataOutput::position(size_t newPos) {
                 dataOutput->position(newPos);
+            }
+
+            pimpl::DataOutput *ObjectDataOutput::getDataOutput() const {
+                return dataOutput;
             }
         }
     }

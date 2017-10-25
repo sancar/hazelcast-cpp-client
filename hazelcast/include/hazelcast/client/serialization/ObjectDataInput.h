@@ -192,6 +192,12 @@ namespace hazelcast {
                 std::auto_ptr<std::vector<std::string> > readUTFArray();
 
                 /**
+                * @return the array of strings
+                * @throws IOException if it reaches end of file before finish reading
+                */
+                std::auto_ptr<std::vector<std::string *> > readStringArray();
+
+                /**
                 * Object can be Portable, IdentifiedDataSerializable or custom serializable
                 * for custom serialization @see Serializer
                 * @return the object read
@@ -200,51 +206,29 @@ namespace hazelcast {
                 template<typename T>
                 std::auto_ptr<T> readObject() {
                     int32_t typeId = readInt();
-                    switch (typeId) {
-                        case pimpl::SerializationConstants::CONSTANT_TYPE_NULL:
-                            return std::auto_ptr<T>();
-                        case pimpl::SerializationConstants::CONSTANT_TYPE_DATA:
-                        {
-                            std::auto_ptr<IdentifiedDataSerializable> object = serializerHolder.getDataSerializer().read(
-                                    *this);
-                            if (NULL == object.get()) {
-                                // Keep original behaviour for backward compatbility
-                                #ifdef __clang__
-                                #pragma clang diagnostic push
-                                #pragma clang diagnostic ignored "-Wreinterpret-base-class"
-                                #endif
-                                object = std::auto_ptr<IdentifiedDataSerializable>(reinterpret_cast<IdentifiedDataSerializable *>(new T));
-                                #ifdef __clang__
-                                #pragma clang diagnostic pop
-                                #endif
-                                portableContext.getConstants().checkClassType(getHazelcastTypeId(object.get()), typeId);
-                                readDataSerializable(object.get());
-                            }
-                            return std::auto_ptr<T>((T *)object.release());
-                        }
-                        case pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE:
-                        {
-                            std::auto_ptr<Portable> object = serializerHolder.getPortableSerializer().read(dataInput);
-                            if (NULL == object.get()) {
-                                // Keep original behaviour for backward compatbility
-                                #ifdef __clang__
-                                #pragma clang diagnostic push
-                                #pragma clang diagnostic ignored "-Wreinterpret-base-class"
-                                #endif
-                                object = std::auto_ptr<Portable>(reinterpret_cast<Portable *>(new T));
-                                #ifdef __clang__
-                                #pragma clang diagnostic pop
-                                #endif
-                                portableContext.getConstants().checkClassType(getHazelcastTypeId(object.get()), typeId);
-                                readPortable(object.get());
-                            }
-                            return std::auto_ptr<T>((T *)object.release());;
-                        }
-                        default:
-                        {
-                            return readInternal<T>(typeId);
-                        }
+                    return readObject<T>(typeId);
+                }
+
+                template<typename T>
+                std::auto_ptr<T> readObject(int32_t typeId) {
+                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(typeId);
+                    if (NULL == serializer.get()) {
+                        const std::string message = "No serializer found for serializerId :"+
+                                                    util::IOUtil::to_string(typeId) + ", typename :" +
+                                                    typeid(T).name();
+                        throw exception::HazelcastSerializationException("ObjectDataInput::readInternal", message);
                     }
+
+                    std::auto_ptr<T> object(reinterpret_cast<T *>(serializer->create(*this)));
+                    if (NULL == object.get()) {
+                        object = std::auto_ptr<T>(new T);
+                        portableContext.getConstants().checkClassType(getHazelcastTypeId(object.get()), typeId);
+                    }
+
+                    Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
+                    s->read(*this, *object);
+
+                    return object;
                 }
 
                 /**
@@ -264,36 +248,8 @@ namespace hazelcast {
                 */
                 void position(int newPos);
 
-                pimpl::DataInput &getDataInput() const;
-
             private:
 
-                template <typename T>
-                std::auto_ptr<T> readInternal(int typeId) {
-                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(typeId);
-                    if (NULL == serializer.get()) {
-                        const std::string message = "No serializer found for serializerId :"+
-                                                     util::IOUtil::to_string(typeId) + ", typename :" +
-                                                     typeid(T).name();
-                        throw exception::HazelcastSerializationException("ObjectDataInput::readInternal", message);
-                    }
-
-                    std::auto_ptr<T> object(reinterpret_cast<T *>(serializer->create()));
-                    if (NULL == object.get()) {
-                        object = std::auto_ptr<T>(new T);
-                        portableContext.getConstants().checkClassType(getHazelcastTypeId(object.get()), typeId);
-                    }
-                    
-                    Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
-                    ObjectDataInput objectDataInput(dataInput, portableContext);
-                    s->read(objectDataInput, *object);
-
-                    return object;
-                }
-
-                void readPortable(Portable *object);
-
-                void readDataSerializable(IdentifiedDataSerializable * object);
 
                 pimpl::DataInput& dataInput;
                 pimpl::PortableContext& portableContext;
@@ -305,34 +261,6 @@ namespace hazelcast {
 
             };
 
-/*
-            template <>
-            HAZELCAST_API std::auto_ptr<T> ObjectDataInput::readInternal(int typeId, byte *object);
-
-            template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, bool *object);
-
-            template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, char *object);
-
-            template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, int16_t *object);
-
-            template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, int32_t *object);
-
-            template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, int64_t *object);
-
-            template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, float *object);
-
-            template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, double *object);
-
-            template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, std::string *object);
-*/
         }
     }
 }

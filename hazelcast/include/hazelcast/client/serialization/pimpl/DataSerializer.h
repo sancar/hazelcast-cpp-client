@@ -45,23 +45,24 @@ namespace hazelcast {
             class DataSerializableFactory;
 
             namespace pimpl {
-                class HAZELCAST_API DataSerializer {
+                class HAZELCAST_API DataSerializer : public Serializer<IdentifiedDataSerializable> {
                 public:
                     DataSerializer(const SerializationConfig &serializationConfig);
 
-                    DataSerializer(const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &dataSerializableFactories);
-
                     ~DataSerializer();
 
-                    void write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) const;
+                    void write(ObjectDataOutput &out, const IdentifiedDataSerializable &object);
 
-                    void read(ObjectDataInput &in, IdentifiedDataSerializable &object) const;
+                    void read(ObjectDataInput &in, IdentifiedDataSerializable &object);
 
-                    std::auto_ptr<IdentifiedDataSerializable> read(ObjectDataInput &in);
+                    virtual int32_t getHazelcastTypeId() const;
+
+                    virtual void *create(ObjectDataInput &in);
+
                 private:
                     void checkIfIdentifiedDataSerializable(ObjectDataInput &in) const;
 
-                    const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &dataSerializableFactories;
+                    const SerializationConfig &serializationConfig;
                 };
             }
         }

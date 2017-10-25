@@ -57,9 +57,7 @@ namespace hazelcast {
                 class HAZELCAST_API PortableContext {
                 public:
 
-                    PortableContext(int version, const SerializationConstants &constants,
-                                    const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &dataSerializableFactories,
-                                    const std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > &portableFactories);
+                    PortableContext(const SerializationConfig &serializationConfig, const SerializationConstants &constants);
 
                     int getClassVersion(int factoryId, int classId);
 
@@ -73,13 +71,13 @@ namespace hazelcast {
 
                     int getVersion();
 
-                    boost::shared_ptr<ClassDefinition> readClassDefinition(DataInput &input, int id, int classId, int version);
+                    boost::shared_ptr<ClassDefinition> readClassDefinition(ObjectDataInput &input, int id, int classId, int version);
 
                     SerializerHolder &getSerializerHolder();
 
                     SerializationConstants const& getConstants() const;
 
-                    const std::map<int32_t, boost::shared_ptr<PortableFactory> > &getPortableFactories() const;
+                    const SerializationConfig &getSerializationConfig() const;
 
                 private:
 
@@ -89,11 +87,10 @@ namespace hazelcast {
 
                     void operator = (const PortableContext &);
 
-                    int contextVersion;
                     util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;
                     SerializerHolder serializerHolder;
                     const SerializationConstants& constants;
-                    const std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > &portableFactories;
+                    const SerializationConfig &serializationConfig;
                 };
             }
         }

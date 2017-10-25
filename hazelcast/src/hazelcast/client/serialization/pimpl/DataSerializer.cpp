@@ -27,45 +27,21 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 DataSerializer::DataSerializer(const SerializationConfig &serializationConfig)
-                        : dataSerializableFactories(serializationConfig.getDataSerializableFactories()) {
-                }
-
-                DataSerializer::DataSerializer(
-                        const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &dataSerializableFactories)
-                        : dataSerializableFactories(dataSerializableFactories) {
+                        : serializationConfig(serializationConfig) {
                 }
 
                 DataSerializer::~DataSerializer() {
                 }
 
-                void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) const {
+                void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) {
                     out.writeBoolean(true);
                     out.writeInt(object.getFactoryId());
                     out.writeInt(object.getClassId());
                     object.writeData(out);
                 }
 
-                void DataSerializer::read(ObjectDataInput &in, IdentifiedDataSerializable &object) const {
+                void DataSerializer::read(ObjectDataInput &in, IdentifiedDataSerializable &object) {
                     object.readData(in);
-                }
-
-                std::auto_ptr<IdentifiedDataSerializable>  DataSerializer::read(ObjectDataInput &in) {
-                    // we read these three fields first so that if the other version of read method is called for
-                    // backward compatibility, these fields will not read again.
-                    checkIfIdentifiedDataSerializable(in);
-                    int32_t factoryId = in.readInt();
-                    int32_t classId = in.readInt();
-
-                    std::map<int, boost::shared_ptr<hazelcast::client::serialization::DataSerializableFactory> >::const_iterator dsfIterator = dataSerializableFactories.find(factoryId);
-                    if (dsfIterator == dataSerializableFactories.end()) {
-                        // keep backward compatible, do not throw exception
-                        return std::auto_ptr<IdentifiedDataSerializable>();
-                    }
-                    std::auto_ptr<IdentifiedDataSerializable> ds = dsfIterator->second->create(classId);
-                    if ((IdentifiedDataSerializable *)NULL != ds.get()) {
-                        ds->readData(in);
-                    }
-                    return ds;
                 }
 
                 void DataSerializer::checkIfIdentifiedDataSerializable(ObjectDataInput &in) const {
@@ -73,6 +49,29 @@ namespace hazelcast {
                     if (!identified) {
                         throw exception::HazelcastSerializationException("void DataSerializer::read", " DataSerializable is not identified");
                     }
+                }
+
+                int32_t DataSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_DATA;
+                }
+
+                void *DataSerializer::create(ObjectDataInput &in) {
+                    // we read these three fields first so that if the other version of read method is called for
+                    // backward compatibility, these fields will not be read again.
+                    checkIfIdentifiedDataSerializable(in);
+                    int32_t factoryId = in.readInt();
+                    int32_t classId = in.readInt();
+
+                    const std::map<int32_t, boost::shared_ptr<DataSerializableFactory> > &dataSerializableFactories =
+                            serializationConfig.getDataSerializableFactories();
+                    std::map<int, boost::shared_ptr<hazelcast::client::serialization::DataSerializableFactory> >::const_iterator dsfIterator =
+                            dataSerializableFactories.find(factoryId);
+                    if (dsfIterator == dataSerializableFactories.end()) {
+                        // keep backward compatible, do not throw exception
+                        return NULL;
+                    }
+
+                    return dsfIterator->second->create(classId).release();
                 }
             }
         }

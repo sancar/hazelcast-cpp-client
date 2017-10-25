@@ -36,7 +36,7 @@ namespace hazelcast {
                     object = in.readInt();
                 }
 
-                void *IntegerSerializer::create() {
+                void *IntegerSerializer::create(ObjectDataInput &in) {
                     return new int32_t;
                 }
 
@@ -52,7 +52,7 @@ namespace hazelcast {
                     object = in.readByte();
                 }
 
-                void *ByteSerializer::create() {
+                void *ByteSerializer::create(ObjectDataInput &in) {
                     return new byte;
                 }
 
@@ -68,8 +68,259 @@ namespace hazelcast {
                     object = in.readBoolean();
                 }
 
-                void *BooleanSerializer::create() {
+                void *BooleanSerializer::create(ObjectDataInput &in) {
                     return new bool;
+                }
+
+                int32_t CharSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_CHAR;
+                }
+
+                void CharSerializer::write(ObjectDataOutput &out, const char &object) {
+                    out.writeChar(object);
+                }
+
+                void CharSerializer::read(ObjectDataInput &in, char &object) {
+                    object = in.readChar();
+                }
+
+                void *CharSerializer::create(ObjectDataInput &in) {
+                    return new char;
+                }
+
+                int32_t ShortSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_SHORT;
+                }
+
+                void ShortSerializer::write(ObjectDataOutput &out, const int16_t &object) {
+                    out.writeShort(object);
+                }
+
+                void ShortSerializer::read(ObjectDataInput &in, int16_t &object) {
+                    object = in.readShort();
+                }
+
+                void *ShortSerializer::create(ObjectDataInput &in) {
+                    return new int16_t;
+                }
+
+                int32_t LongSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_LONG;
+                }
+
+                void LongSerializer::write(ObjectDataOutput &out, const int64_t &object) {
+                    out.writeLong(object);
+                }
+
+                void LongSerializer::read(ObjectDataInput &in, int64_t &object) {
+                    object = in.readLong();
+                }
+
+                void *LongSerializer::create(ObjectDataInput &in) {
+                    return new int64_t;
+                }
+
+                int32_t FloatSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_FLOAT;
+                }
+
+                void FloatSerializer::write(ObjectDataOutput &out, const float &object) {
+                    out.writeLong(object);
+                }
+
+                void FloatSerializer::read(ObjectDataInput &in, float &object) {
+                    object = in.readFloat();
+                }
+
+                void *FloatSerializer::create(ObjectDataInput &in) {
+                    return new float;
+                }
+
+
+                int32_t DoubleSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_DOUBLE;
+                }
+
+                void DoubleSerializer::write(ObjectDataOutput &out, const double &object) {
+                    out.writeDouble(object);
+                }
+
+                void DoubleSerializer::read(ObjectDataInput &in, double &object) {
+                    object = in.readDouble();
+                }
+
+                void *DoubleSerializer::create(ObjectDataInput &in) {
+                    return new double;
+                }
+
+                int32_t StringSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_STRING;
+                }
+
+                void StringSerializer::write(ObjectDataOutput &out, const std::string &object) {
+                    out.writeUTF(&object);
+                }
+
+                void StringSerializer::read(ObjectDataInput &in, std::string &object) {
+                    object = *in.readUTF();
+                }
+
+                void *StringSerializer::create(ObjectDataInput &in) {
+                    return new std::string;
+                }
+
+                int32_t NullSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_NULL;
+                }
+
+                void NullSerializer::write(ObjectDataOutput &out, const byte &object) {
+                }
+
+                void NullSerializer::read(ObjectDataInput &in, byte &object) {
+                }
+
+                int32_t TheByteArraySerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
+                }
+
+                void TheByteArraySerializer::write(ObjectDataOutput &out, const std::vector<byte> &object) {
+                    out.writeByteArray(&object);
+                }
+
+                void TheByteArraySerializer::read(ObjectDataInput &in, std::vector<byte> &object) {
+                    object = *in.readByteArray();
+                }
+
+                void *TheByteArraySerializer::create(ObjectDataInput &in) {
+                    return new std::vector<byte>;
+                }
+
+                int32_t BooleanArraySerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY;
+                }
+
+                void BooleanArraySerializer::write(ObjectDataOutput &out, const std::vector<bool> &object) {
+                    out.writeBooleanArray(&object);
+                }
+
+                void BooleanArraySerializer::read(ObjectDataInput &in, std::vector<bool> &object) {
+                    object = *in.readBooleanArray();
+                }
+
+                void *BooleanArraySerializer::create(ObjectDataInput &in) {
+                    return new std::vector<bool>;
+                }
+
+                int32_t CharArraySerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
+                }
+
+                void CharArraySerializer::write(ObjectDataOutput &out, const std::vector<char> &object) {
+                    out.writeCharArray(&object);
+                }
+
+                void CharArraySerializer::read(ObjectDataInput &in, std::vector<char> &object) {
+                    object = *in.readCharArray();
+                }
+
+                void *CharArraySerializer::create(ObjectDataInput &in) {
+                    return new std::vector<char>;
+                }
+
+                int32_t ShortArraySerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
+                }
+
+                void ShortArraySerializer::write(ObjectDataOutput &out, const std::vector<int16_t> &object) {
+                    out.writeShortArray(&object);
+                }
+
+                void ShortArraySerializer::read(ObjectDataInput &in, std::vector<int16_t> &object) {
+                    object = *in.readShortArray();
+                }
+
+                void *ShortArraySerializer::create(ObjectDataInput &in) {
+                    return new std::vector<int16_t>;
+                }
+
+                int32_t IntegerArraySerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
+                }
+
+                void IntegerArraySerializer::write(ObjectDataOutput &out, const std::vector<int32_t> &object) {
+                    out.writeIntArray(&object);
+                }
+
+                void IntegerArraySerializer::read(ObjectDataInput &in, std::vector<int32_t> &object) {
+                    object = *in.readIntArray();
+                }
+
+                void *IntegerArraySerializer::create(ObjectDataInput &in) {
+                    return new std::vector<int32_t>;
+                }
+
+                int32_t LongArraySerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
+                }
+
+                void LongArraySerializer::write(ObjectDataOutput &out, const std::vector<int64_t> &object) {
+                    out.writeLongArray(&object);
+                }
+
+                void LongArraySerializer::read(ObjectDataInput &in, std::vector<int64_t> &object) {
+                    object = *in.readLongArray();
+                }
+
+                void *LongArraySerializer::create(ObjectDataInput &in) {
+                    return new std::vector<int64_t>;
+                }
+
+                int32_t FloatArraySerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
+                }
+
+                void FloatArraySerializer::write(ObjectDataOutput &out, const std::vector<float> &object) {
+                    out.writeFloatArray(&object);
+                }
+
+                void FloatArraySerializer::read(ObjectDataInput &in, std::vector<float> &object) {
+                    object = *in.readFloatArray();
+                }
+
+                void *FloatArraySerializer::create(ObjectDataInput &in) {
+                    return new std::vector<float>;
+                }
+
+                int32_t DoubleArraySerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
+                }
+
+                void DoubleArraySerializer::write(ObjectDataOutput &out, const std::vector<double> &object) {
+                    out.writeDoubleArray(&object);
+                }
+
+                void DoubleArraySerializer::read(ObjectDataInput &in, std::vector<double> &object) {
+                    object = *in.readDoubleArray();
+                }
+
+                void *DoubleArraySerializer::create(ObjectDataInput &in) {
+                    return new std::vector<double>;
+                }
+
+                int32_t StringArraySerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_STRING_ARRAY;
+                }
+
+                void StringArraySerializer::write(ObjectDataOutput &out, const std::vector<std::string *> &object) {
+                    out.writeUTFArray(&object);
+                }
+
+                void StringArraySerializer::read(ObjectDataInput &in, std::vector<std::string *> &object) {
+                    object = *in.readStringArray();
+                }
+
+                void *StringArraySerializer::create(ObjectDataInput &in) {
+                    return new std::vector<std::string *>;
                 }
             }
         }
