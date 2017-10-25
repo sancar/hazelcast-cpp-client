@@ -209,10 +209,14 @@ namespace hazelcast {
                                     *this);
                             if (NULL == object.get()) {
                                 // Keep original behaviour for backward compatbility
+                                #ifdef __clang__
                                 #pragma clang diagnostic push
                                 #pragma clang diagnostic ignored "-Wreinterpret-base-class"
+                                #endif
                                 object = std::auto_ptr<IdentifiedDataSerializable>(reinterpret_cast<IdentifiedDataSerializable *>(new T));
+                                #ifdef __clang__
                                 #pragma clang diagnostic pop
+                                #endif
                                 portableContext.getConstants().checkClassType(getHazelcastTypeId(object.get()), typeId);
                                 readDataSerializable(object.get());
                             }
@@ -223,10 +227,14 @@ namespace hazelcast {
                             std::auto_ptr<Portable> object = serializerHolder.getPortableSerializer().read(dataInput);
                             if (NULL == object.get()) {
                                 // Keep original behaviour for backward compatbility
+                                #ifdef __clang__
                                 #pragma clang diagnostic push
                                 #pragma clang diagnostic ignored "-Wreinterpret-base-class"
+                                #endif
                                 object = std::auto_ptr<Portable>(reinterpret_cast<Portable *>(new T));
+                                #ifdef __clang__
                                 #pragma clang diagnostic pop
+                                #endif
                                 portableContext.getConstants().checkClassType(getHazelcastTypeId(object.get()), typeId);
                                 readPortable(object.get());
                             }
