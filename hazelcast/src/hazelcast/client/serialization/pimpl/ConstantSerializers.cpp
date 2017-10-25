@@ -125,7 +125,7 @@ namespace hazelcast {
                 }
 
                 void FloatSerializer::write(ObjectDataOutput &out, const float &object) {
-                    out.writeLong(object);
+                    out.writeFloat(object);
                 }
 
                 void FloatSerializer::read(ObjectDataInput &in, float &object) {
