@@ -311,16 +311,16 @@ namespace hazelcast {
                     return SerializationConstants::CONSTANT_TYPE_STRING_ARRAY;
                 }
 
-                void StringArraySerializer::write(ObjectDataOutput &out, const std::vector<std::string *> &object) {
-                    out.writeUTFArray(&object);
+                void StringArraySerializer::write(ObjectDataOutput &out, const std::vector<std::string> &object) {
+                    out.writeStringArray(&object);
                 }
 
-                void StringArraySerializer::read(ObjectDataInput &in, std::vector<std::string *> &object) {
-                    object = *in.readStringArray();
+                void StringArraySerializer::read(ObjectDataInput &in, std::vector<std::string> &object) {
+                    object = *in.readUTFArray();
                 }
 
                 void *StringArraySerializer::create(ObjectDataInput &in) {
-                    return new std::vector<std::string *>;
+                    return new std::vector<std::string>;
                 }
             }
         }

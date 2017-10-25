@@ -231,13 +231,13 @@ namespace hazelcast {
                     virtual void *create(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API StringArraySerializer : public Serializer<std::vector<std::string *> > {
+                class HAZELCAST_API StringArraySerializer : public Serializer<std::vector<std::string> > {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::vector<std::string *> &object);
+                    virtual void write(ObjectDataOutput &out, const std::vector<std::string> &object);
 
-                    virtual void read(ObjectDataInput &in, std::vector<std::string *> &object);
+                    virtual void read(ObjectDataInput &in, std::vector<std::string> &object);
 
                     virtual void *create(ObjectDataInput &in);
                 };

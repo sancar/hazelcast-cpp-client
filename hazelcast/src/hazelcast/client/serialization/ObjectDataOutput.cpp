@@ -155,6 +155,20 @@ namespace hazelcast {
                 }
             }
 
+            void ObjectDataOutput::writeStringArray(const std::vector<std::string> *strings) {
+                if (isEmpty) return;
+
+                int32_t len = NULL != strings ? (int32_t) strings->size() : util::Bits::NULL_ARRAY;
+
+                writeInt(len);
+
+                if (len > 0) {
+                    for (std::vector<std::string>::const_iterator it = strings->begin(); it != strings->end(); ++it) {
+                        writeUTF(&(*it));
+                    }
+                }
+            }
+
             void ObjectDataOutput::writeData(const pimpl::Data *data) {
                 if (NULL == data || 0 == data->dataSize()) {
                     writeInt(util::Bits::NULL_ARRAY);

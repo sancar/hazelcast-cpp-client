@@ -168,6 +168,8 @@ namespace hazelcast {
                  */
                 void writeUTFArray(const std::vector<std::string *> *strings);
 
+                void writeStringArray(const std::vector<std::string> *strings);
+
                 /**
                 * @param value the data value to be written
                 */
