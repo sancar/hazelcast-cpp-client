@@ -84,7 +84,8 @@ namespace hazelcast {
 
                         DataOutput output;
 
-                        ObjectDataOutput dataOutput(output, portableContext);
+                        SerializerHolder &serializerHolder = getSerializerHolder();
+                        ObjectDataOutput dataOutput(output, &serializerHolder);
 
                         writeHash<T>(object, output);
 
@@ -122,7 +123,8 @@ namespace hazelcast {
                         // let usage of static member.
                         DataInput dataInput(data.toByteArray(), 8);
 
-                        ObjectDataInput objectDataInput(dataInput, portableContext);
+                        SerializerHolder &serializerHolder = getSerializerHolder();
+                        ObjectDataInput objectDataInput(dataInput, serializerHolder);
                         return objectDataInput.readObject<T>(typeId);
                     }
 
@@ -139,14 +141,18 @@ namespace hazelcast {
                     const byte getVersion() const;
 
                     ObjectType getObjectType(const Data *data);
-                private:
+
+                    /**
+                     * This method is public only for testing purposes
+                     * @return The serializer holder.
+                     */
                     SerializerHolder &getSerializerHolder();
+                private:
 
                     SerializationService(const SerializationService &);
 
                     SerializationService &operator = (const SerializationService &);
 
-                    SerializationConstants constants;
                     PortableContext portableContext;
                     const SerializationConfig& serializationConfig;
 

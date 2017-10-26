@@ -39,8 +39,8 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableContext::PortableContext(const SerializationConfig &serializationConfig, const SerializationConstants &constants)
-                : serializerHolder(*this) , constants(constants), serializationConfig(serializationConfig) {
+                PortableContext::PortableContext(const SerializationConfig &serializationConfig) :
+                        serializationConfig(serializationConfig) {
                 }
 
                 int PortableContext::getClassVersion(int factoryId, int classId) {
@@ -142,11 +142,6 @@ namespace hazelcast {
 
                 SerializerHolder& PortableContext::getSerializerHolder() {
                     return serializerHolder;
-                }
-
-
-                SerializationConstants const& PortableContext::getConstants() const {
-                    return constants;
                 }
 
                 ClassDefinitionContext& PortableContext::getClassDefinitionContext(int factoryId) {

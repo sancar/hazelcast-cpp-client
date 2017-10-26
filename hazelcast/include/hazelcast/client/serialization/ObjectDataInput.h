@@ -69,7 +69,7 @@ namespace hazelcast {
                 /**
                 * Internal API. Constructor
                 */
-                ObjectDataInput(pimpl::DataInput&, pimpl::PortableContext&);
+                ObjectDataInput(pimpl::DataInput &dataInput, pimpl::SerializerHolder &serializerHolder);
 
                 /**
                 * fills all content to given byteArray
@@ -222,7 +222,7 @@ namespace hazelcast {
                     std::auto_ptr<T> object(reinterpret_cast<T *>(serializer->create(*this)));
                     if (NULL == object.get()) {
                         object = std::auto_ptr<T>(new T);
-                        portableContext.getConstants().checkClassType(getHazelcastTypeId(object.get()), typeId);
+                        pimpl::SerializationConstants::checkClassType(getHazelcastTypeId(object.get()), typeId);
                     }
 
                     Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
@@ -252,7 +252,6 @@ namespace hazelcast {
 
 
                 pimpl::DataInput& dataInput;
-                pimpl::PortableContext& portableContext;
                 pimpl::SerializerHolder& serializerHolder;
 
                 ObjectDataInput(const ObjectDataInput&);

@@ -39,6 +39,8 @@
 
 namespace hazelcast {
     namespace client {
+        class SerializationConfig;
+
         namespace serialization {
 
             class ClassDefinition;
@@ -57,7 +59,7 @@ namespace hazelcast {
                 class HAZELCAST_API PortableSerializer : public Serializer<Portable> {
                 public:
 
-                    PortableSerializer(PortableContext& portableContext);
+                    PortableSerializer(PortableContext& portableContext, const SerializationConfig &serializationConfig);
 
                     void write(ObjectDataOutput& dataOutput, const Portable& p);
 
@@ -69,6 +71,7 @@ namespace hazelcast {
 
                 private:
                     PortableContext& context;
+                    const SerializationConfig &serializationConfig;
 
                     int findPortableVersion(int factoryId, int classId, const Portable& portable) const;
 

@@ -31,7 +31,7 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 SerializationService::SerializationService(const SerializationConfig &serializationConfig)
-                        : portableContext(serializationConfig, constants),
+                        : portableContext(serializationConfig),
                           serializationConfig(serializationConfig) {
                     registerConstantSerializers();
 
@@ -441,7 +441,7 @@ namespace hazelcast {
                     // let usage of static member.
                     DataInput dataInput(data->toByteArray(), 4);
 
-                    ObjectDataInput objectDataInput(dataInput, portableContext);
+                    ObjectDataInput objectDataInput(dataInput, getSerializerHolder());
 
                     if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId ||
                             SerializationConstants::CONSTANT_TYPE_PORTABLE == type.typeId) {
@@ -465,7 +465,7 @@ namespace hazelcast {
                 void SerializationService::registerConstantSerializers() {
                     registerSerializer(boost::shared_ptr<SerializerBase>(new NullSerializer));
                     registerSerializer(boost::shared_ptr<SerializerBase>(new DataSerializer(serializationConfig)));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new PortableSerializer(portableContext)));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new PortableSerializer(portableContext, serializationConfig)));
                     //primitives and String
                     registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::ByteSerializer));
                     registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::BooleanSerializer));

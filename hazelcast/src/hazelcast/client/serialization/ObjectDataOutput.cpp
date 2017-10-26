@@ -24,15 +24,13 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput &dataOutput,
-                                               pimpl::PortableContext &portableContext)
-                    : dataOutput(&dataOutput), context(&portableContext),
-                      serializerHolder(&portableContext.getSerializerHolder()), isEmpty(false) {
+            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput &dataOutput, pimpl::SerializerHolder *serializerHolder)
+                    : dataOutput(&dataOutput), serializerHolder(serializerHolder), isEmpty(false) {
 
             }
 
             ObjectDataOutput::ObjectDataOutput()
-                    : dataOutput(NULL), context(NULL), serializerHolder(NULL), isEmpty(true) {
+                    : dataOutput(NULL), serializerHolder(NULL), isEmpty(true) {
             }
 
             std::auto_ptr<std::vector<byte> > ObjectDataOutput::toByteArray() {

@@ -40,8 +40,6 @@ namespace hazelcast {
             namespace pimpl {
                 class HAZELCAST_API SerializationConstants {
                 public:
-                    SerializationConstants();
-
                     enum Types {
                         CONSTANT_TYPE_NULL = 0,
                         CONSTANT_TYPE_PORTABLE = -1,
@@ -67,14 +65,15 @@ namespace hazelcast {
                     };
                     // ------------------------------------------------------------
 
-                    void checkClassType(int32_t expectedType, int32_t currentType) const;
+                    static void checkClassType(int32_t expectedType, int32_t currentType);
 
                 private:
-                    const int32_t size;
-                    std::vector<std::string> typeIdNameVector;
+                    static const int32_t size;
+                    static std::vector<std::string> typeIdNameVector;
 
-                    int idToIndex(int32_t id) const;
-                    std::string typeIdToName(int32_t typeId) const;
+                    static int idToIndex(int32_t id);
+                    static std::string typeIdToName(int32_t typeId);
+                    static const std::vector<std::string> &getTypeIdNameVector();
                 };
             }
         }

@@ -215,7 +215,10 @@ namespace hazelcast {
                 }
 
                 void PortableReaderBase::read(ObjectDataInput& dataInput, Portable& object) const {
-                    serializerHolder.getPortableSerializer().read(dataInput, object);
+                    boost::shared_ptr<Serializer<Portable> > serializer = boost::static_pointer_cast<Serializer<Portable> >(
+                            serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
+
+                    serializer->read(dataInput, object);
                 }
 
                 void PortableReaderBase::end() {

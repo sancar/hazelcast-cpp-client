@@ -28,11 +28,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ObjectDataInput::ObjectDataInput(pimpl::DataInput& dataInput, pimpl::PortableContext& context)
+            ObjectDataInput::ObjectDataInput(pimpl::DataInput& dataInput, pimpl::SerializerHolder &serializerHolder)
             : dataInput(dataInput)
-            , portableContext(context)
-            , serializerHolder(context.getSerializerHolder()) {
-
+            , serializerHolder(serializerHolder) {
             }
 
             void ObjectDataInput::readFully(std::vector<byte>& bytes) {

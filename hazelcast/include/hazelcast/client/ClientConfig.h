@@ -296,7 +296,7 @@ namespace hazelcast {
             *
             *  @return serializationConfig
             */
-            SerializationConfig &getSerializationConfig();
+            const SerializationConfig &getSerializationConfig() const;
 
             /**
             * SerializationConfig is used to

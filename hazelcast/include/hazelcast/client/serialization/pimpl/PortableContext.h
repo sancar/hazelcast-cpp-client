@@ -57,7 +57,7 @@ namespace hazelcast {
                 class HAZELCAST_API PortableContext {
                 public:
 
-                    PortableContext(const SerializationConfig &serializationConfig, const SerializationConstants &constants);
+                    PortableContext(const SerializationConfig &serializationConfig);
 
                     int getClassVersion(int factoryId, int classId);
 
@@ -75,8 +75,6 @@ namespace hazelcast {
 
                     SerializerHolder &getSerializerHolder();
 
-                    SerializationConstants const& getConstants() const;
-
                     const SerializationConfig &getSerializationConfig() const;
 
                 private:
@@ -89,7 +87,6 @@ namespace hazelcast {
 
                     util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;
                     SerializerHolder serializerHolder;
-                    const SerializationConstants& constants;
                     const SerializationConfig &serializationConfig;
                 };
             }

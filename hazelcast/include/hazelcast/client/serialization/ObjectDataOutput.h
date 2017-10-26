@@ -54,7 +54,7 @@ namespace hazelcast {
                 /**
                 * Internal API Constructor
                 */
-                ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::PortableContext& portableContext);
+                ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::SerializerHolder *serializerHolder);
 
                 /**
                 * Internal API Constructor
@@ -192,7 +192,9 @@ namespace hazelcast {
                         writeInt(object->getFactoryId());
                         writeInt(object->getClassId());
 
-                        context->getSerializerHolder().getPortableSerializer().write(*this, *object);
+                        boost::shared_ptr<Serializer<Portable> > serializer = boost::static_pointer_cast<Serializer<Portable> >(
+                                serializerHolder->serializerFor(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE));
+                        serializer->write(*this, *object);
                     }
                 }
 
@@ -209,7 +211,9 @@ namespace hazelcast {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_DATA);
-                        context->getSerializerHolder().getDataSerializer().write(*this, *object);
+                        boost::shared_ptr<Serializer<IdentifiedDataSerializable> > serializer = boost::static_pointer_cast<Serializer<IdentifiedDataSerializable> >(
+                                serializerHolder->serializerFor(pimpl::SerializationConstants::CONSTANT_TYPE_DATA));
+                        serializer->write(*this, *object);
                     }
                 }
 
