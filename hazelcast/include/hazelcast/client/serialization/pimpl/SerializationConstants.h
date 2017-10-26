@@ -66,14 +66,8 @@ namespace hazelcast {
                     // ------------------------------------------------------------
 
                     static void checkClassType(int32_t expectedType, int32_t currentType);
-
                 private:
-                    static const int32_t size;
-                    static std::vector<std::string> typeIdNameVector;
-
-                    static int idToIndex(int32_t id);
                     static std::string typeIdToName(int32_t typeId);
-                    static const std::vector<std::string> &getTypeIdNameVector();
                 };
             }
         }

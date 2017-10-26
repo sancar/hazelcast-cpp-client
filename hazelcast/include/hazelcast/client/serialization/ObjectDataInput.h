@@ -220,7 +220,7 @@ namespace hazelcast {
                     }
 
                     std::auto_ptr<T> object(reinterpret_cast<T *>(serializer->create(*this)));
-                    if (NULL == object.get()) {
+                    if (pimpl::SerializationConstants::CONSTANT_TYPE_NULL != typeId && NULL == object.get()) {
                         object = std::auto_ptr<T>(new T);
                         pimpl::SerializationConstants::checkClassType(getHazelcastTypeId(object.get()), typeId);
                     }
