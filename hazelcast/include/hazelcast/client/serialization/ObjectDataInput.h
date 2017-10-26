@@ -249,8 +249,6 @@ namespace hazelcast {
                 void position(int newPos);
 
             private:
-
-
                 pimpl::DataInput& dataInput;
                 pimpl::SerializerHolder& serializerHolder;
 
