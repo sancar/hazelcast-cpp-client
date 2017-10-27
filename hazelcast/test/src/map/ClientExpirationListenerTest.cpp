@@ -148,7 +148,7 @@ namespace hazelcast {
             };
 
             TEST_F(ClientExpirationListenerTest, bothNotified_afterExpirationOfEntries) {
-                int numberOfPutOperations = 1000;
+                int numberOfPutOperations = 10;
                 util::CountDownLatch expirationEventArrivalCount(numberOfPutOperations);
                 util::CountDownLatch evictedEventArrivalCount(numberOfPutOperations);
 
