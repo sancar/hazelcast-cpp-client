@@ -445,7 +445,8 @@ namespace hazelcast {
 
                     if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId ||
                             SerializationConstants::CONSTANT_TYPE_PORTABLE == type.typeId) {
-                        assert(type.typeId == objectDataInput.readInt());
+                        int32_t xxx = objectDataInput.readInt();
+                        assert(type.typeId == xxx);
 
                         if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId) {
                             bool identified = objectDataInput.readBoolean();
