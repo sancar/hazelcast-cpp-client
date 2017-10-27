@@ -18,7 +18,6 @@
 
 #include <vector>
 #include <set>
-#include <memory>
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
@@ -296,7 +295,7 @@ namespace hazelcast {
             *
             *  @return serializationConfig
             */
-            SerializationConfig &getSerializationConfig();
+            const SerializationConfig &getSerializationConfig() const;
 
             /**
             * SerializationConfig is used to
@@ -405,7 +404,7 @@ namespace hazelcast {
 
             LoadBalancer *loadBalancer;
 
-            std::auto_ptr<impl::RoundRobinLB> defaultLoadBalancer;
+            impl::RoundRobinLB defaultLoadBalancer;
 
             std::set<MembershipListener *> membershipListeners;
 
