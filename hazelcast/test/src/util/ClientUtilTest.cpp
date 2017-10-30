@@ -201,6 +201,43 @@ namespace hazelcast {
                 ASSERT_NEAR((double)(time(NULL) - beg), (double)wakeUpTime , 1);
             }
 
+
+            class X{
+            public:
+                X(int id):id(id){
+
+                };
+
+                ~X(){
+                    std::cout << " destructed " << id++ << std::endl;
+                };
+
+                int id;
+
+            };
+            void destructorTestThread(util::ThreadArgs& args) {
+                X a(1);
+                util::Mutex mutex;
+                util::LockGuard l(mutex);
+                util::ConditionVariable c;
+                while (true){
+                    c.wait(mutex);
+                }
+
+//                args.currentThread->interruptibleSleep(100000000);
+//                sleep(100000000);
+            }
+
+            TEST_F (ClientUtilTest, testThreadInterruptibleSleepCallsDestructors) {
+                std::cout << std::endl;
+                util::Thread thread(destructorTestThread);
+                X x(2);
+                sleep(5);
+                thread.cancel();
+                thread.join();
+                std::cout << "TEST END " << std::endl;
+            }
+
             TEST_F (ClientUtilTest, testDateConversion) {
                 std::string date("2016-04-20");
                 util::gitDateToHazelcastLogDate(date);
