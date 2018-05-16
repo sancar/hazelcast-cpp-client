@@ -122,7 +122,7 @@ namespace hazelcast {
             }
 
             void HeartbeatManager::shutdown() {
-                heartbeatListeners = std::vector<boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> >();
+                heartbeatListeners.set(std::vector<boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> >());
             }
 
             HeartbeatManager::HearbeatCallback::HearbeatCallback(const boost::shared_ptr<Connection> &connection,

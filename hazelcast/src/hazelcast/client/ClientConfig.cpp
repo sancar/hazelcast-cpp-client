@@ -27,7 +27,9 @@ namespace hazelcast {
     namespace client {
 
         ClientConfig::ClientConfig()
-                : loadBalancer(NULL), redoOperation(false), socketInterceptor(NULL), credentials(NULL),
+                : loadBalancer(),
+                  defaultLoadBalancer(new impl::RoundRobinLB()),
+                  redoOperation(false), socketInterceptor(NULL), credentials(NULL),
                   executorPoolSize(-1) {
         }
 
@@ -99,7 +101,7 @@ namespace hazelcast {
 
         LoadBalancer *const ClientConfig::getLoadBalancer() {
             if (loadBalancer == NULL)
-                return &defaultLoadBalancer;
+                return defaultLoadBalancer;
             return loadBalancer;
         }
 

@@ -245,11 +245,11 @@ namespace hazelcast {
             }
 
             void Connection::onHeartbeatReceived() {
-                lastHeartbeatReceivedMillis = util::currentTimeMillis();
+                lastHeartbeatReceivedMillis.set(util::currentTimeMillis());
             }
 
             void Connection::onHeartbeatRequested() {
-                lastHeartbeatRequestedMillis = util::currentTimeMillis();
+                lastHeartbeatRequestedMillis.set(util::currentTimeMillis());
             }
 
             void Connection::innerClose() {

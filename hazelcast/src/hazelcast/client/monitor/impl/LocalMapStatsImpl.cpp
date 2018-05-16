@@ -26,7 +26,7 @@ namespace hazelcast {
                 }
 
                 void LocalMapStatsImpl::setNearCacheStats(NearCacheStats &stats) {
-                    this->nearCacheStats = &stats;
+                    this->nearCacheStats.set(&stats);
                 }
             }
         }

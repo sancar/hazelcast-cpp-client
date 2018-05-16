@@ -49,7 +49,7 @@ namespace hazelcast {
 
                 void AwsAddressProvider::updateLookupTable() {
                     try {
-                        privateToPublic = awsClient.getAddresses();
+                        privateToPublic.set(awsClient.getAddresses());
                     } catch (exception::IException &e) {
                         logger.warning() << "Aws addresses failed to load: " << e.getMessage();
                     }

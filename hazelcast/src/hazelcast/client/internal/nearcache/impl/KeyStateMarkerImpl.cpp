@@ -42,12 +42,12 @@ namespace hazelcast {
 
                     void KeyStateMarkerImpl::forceUnmark(const serialization::pimpl::Data &key) {
                         int slot = getSlot(key);
-                        marks[slot] = UNMARKED;
+                        marks[slot].set(UNMARKED);
                     }
 
                     void KeyStateMarkerImpl::init() {
                         for (int i = 0; i < markCount; ++i) {
-                            marks[i] = UNMARKED;
+                            marks[i].set(UNMARKED);
                         }
                     }
 

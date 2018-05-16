@@ -39,7 +39,7 @@ public:
     void SetUp() {
         Py_Initialize();
         HazelcastServerFactory::init(serverAddress);
-        hazelcast::client::test::g_srvFactory = new HazelcastServerFactory("hazelcast/test/resources/hazelcast.xml");
+        hazelcast::client::test::g_srvFactory = new HazelcastServerFactory("/Users/sancar/projects/hazelcast-cpp-client/hazelcast/test/resources/hazelcast.xml");
     }
 
     void TearDown() {

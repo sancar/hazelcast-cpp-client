@@ -26,7 +26,7 @@ namespace hazelcast {
     namespace client {
         namespace mixedtype {
             Ringbuffer::Ringbuffer(const std::string &objectName, spi::ClientContext *context) : proxy::ProxyImpl(
-                    "hz:impl:ringbufferService", objectName, context), bufferCapacity(-1) {
+                    "hz:impl:ringbufferService", objectName, context), bufferCapacity(new util::Atomic<int64_t>(-1)) {
                 partitionId = getPartitionId(toData(objectName));
             }
 
@@ -34,13 +34,15 @@ namespace hazelcast {
             }
 
             int64_t Ringbuffer::capacity() {
-                if (-1 == bufferCapacity) {
+                if (-1 == *bufferCapacity) {
                     std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferCapacityCodec::encodeRequest(
                             getName());
-                    bufferCapacity = invokeAndGetResult<int64_t, protocol::codec::RingbufferCapacityCodec::ResponseParameters>(
-                            msg, partitionId);
+                    int64_t result = invokeAndGetResult<int64_t, protocol::codec::RingbufferCapacityCodec::ResponseParameters>(
+                                                msg, partitionId);
+                    bufferCapacity = boost::shared_ptr<util::Atomic<int64_t> >(new util::Atomic<int64_t>(result));
+                        
                 }
-                return bufferCapacity;
+                return *bufferCapacity;
             }
 
             int64_t Ringbuffer::size() {

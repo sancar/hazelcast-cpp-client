@@ -274,7 +274,7 @@ namespace hazelcast {
 
                 void
                 ClientInvocation::setSendConnection(const boost::shared_ptr<connection::Connection> &sendConnection) {
-                    ClientInvocation::sendConnection = sendConnection;
+                    ClientInvocation::sendConnection .set(sendConnection);
                 }
 
                 void ClientInvocation::notify(const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {

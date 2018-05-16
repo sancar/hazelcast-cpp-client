@@ -37,8 +37,8 @@ namespace hazelcast {
             util::LockGuard lg(*localLock);
             bool init = atomicLong.compareAndSet(0, step + 1);
             if (init) {
-                *local = step;
-                *residue = (id % BLOCK_SIZE) + 1;
+                local->set(step);
+                residue->set((id % BLOCK_SIZE) + 1);
             }
             return init;
         }
@@ -49,8 +49,8 @@ namespace hazelcast {
                 util::LockGuard lg(*localLock);
                 value = *residue;
                 if (value >= BLOCK_SIZE) {
-                    *local = atomicLong.getAndIncrement();
-                    *residue = 0;
+                    local->set(atomicLong.getAndIncrement());
+                    residue->set(0);
                 }
                 return newId();
 

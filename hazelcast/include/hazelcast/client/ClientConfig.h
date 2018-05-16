@@ -489,7 +489,7 @@ namespace hazelcast {
 
             LoadBalancer *loadBalancer;
 
-            impl::RoundRobinLB defaultLoadBalancer;
+            impl::RoundRobinLB* defaultLoadBalancer;
 
             std::set<MembershipListener *> membershipListeners;
             std::set<boost::shared_ptr<MembershipListener> > managedMembershipListeners;

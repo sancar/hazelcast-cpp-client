@@ -332,18 +332,18 @@ namespace hazelcast {
                 } else {
                     serialization::pimpl::Data data = ss.toData<Credentials>(credentials);
                     clientMessage = protocol::codec::ClientAuthenticationCustomCodec::encodeRequest(data,
-                                                                                                                uuid,
-                                                                                                                ownerUuid,
-                                                                                                                asOwner,
-                                                                                                                protocol::ClientTypes::CPP,
-                                                                                                                serializationVersion,
-                                                                                                                HAZELCAST_VERSION);
+                                                                                                    uuid,
+                                                                                                    ownerUuid,
+                                                                                                    asOwner,
+                                                                                                    protocol::ClientTypes::CPP,
+                                                                                                    serializationVersion,
+                                                                                                    HAZELCAST_VERSION);
                 }
                 return clientMessage;
             }
 
             void ClientConnectionManagerImpl::setPrincipal(const boost::shared_ptr<protocol::Principal> &principal) {
-                ClientConnectionManagerImpl::principal = principal;
+                ClientConnectionManagerImpl::principal.set(principal);
             }
 
             void ClientConnectionManagerImpl::onAuthenticated(const Address &target,
@@ -456,8 +456,8 @@ namespace hazelcast {
             void
             ClientConnectionManagerImpl::setOwnerConnectionAddress(
                     const boost::shared_ptr<Address> &ownerConnectionAddress) {
-                previousOwnerConnectionAddress = this->ownerConnectionAddress;
-                ClientConnectionManagerImpl::ownerConnectionAddress = ownerConnectionAddress;
+                previousOwnerConnectionAddress.set(this->ownerConnectionAddress.get());
+                ClientConnectionManagerImpl::ownerConnectionAddress.set(ownerConnectionAddress);
             }
 
             void
@@ -518,7 +518,7 @@ namespace hazelcast {
                 BOOST_FOREACH(const std::set<Address>::value_type &address, triedAddresses) {
                                 out << address << " , ";
                             }
-                            out << "}";
+                out << "}";
                 throw exception::IllegalStateException("ConnectionManager::connectToClusterInternal", out.str());
             }
 

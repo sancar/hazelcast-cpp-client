@@ -482,6 +482,7 @@ namespace hazelcast {
                     util::CountDownLatch latch(2);
                     util::CountDownLatch nullLatch(1);
                     MyListener myListener(latch, nullLatch);
+                    imap->size();
                     std::string id = imap->addEntryListener(myListener, true);
 
                     imap->put("key1", "value1", 2 * 1000);

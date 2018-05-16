@@ -88,7 +88,7 @@ namespace hazelcast {
 
                             //@Override
                             void setExpirationTime(int64_t expirationTime) {
-                                AbstractNearCacheRecord::expirationTime = expirationTime;
+                                AbstractNearCacheRecord::expirationTime .set(expirationTime);
                             }
 
                             //@Override
@@ -98,7 +98,7 @@ namespace hazelcast {
 
                             //@Override
                             void setAccessTime(int64_t accessTime) {
-                                AbstractNearCacheRecord::accessTime = accessTime;
+                                AbstractNearCacheRecord::accessTime .set(accessTime);
                             }
 
                             //@Override
@@ -108,7 +108,7 @@ namespace hazelcast {
 
                             //@Override
                             void setAccessHit(int32_t accessHit) {
-                                AbstractNearCacheRecord::accessHit = accessHit;
+                                AbstractNearCacheRecord::accessHit.set(accessHit);
                             }
 
                             //@Override
@@ -124,7 +124,7 @@ namespace hazelcast {
 
                             //@Override
                             void resetAccessHit() {
-                                accessHit = 0;
+                                accessHit.set(0);
                             }
 
                             //@Override

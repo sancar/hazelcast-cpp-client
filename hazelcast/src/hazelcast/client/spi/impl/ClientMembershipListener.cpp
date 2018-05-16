@@ -197,8 +197,8 @@ namespace hazelcast {
                 ClientMembershipListener::listenMembershipEvents(
                         const boost::shared_ptr<ClientMembershipListener> &listener,
                         const boost::shared_ptr<connection::Connection> &ownerConnection) {
-                    listener->initialListFetchedLatch = boost::shared_ptr<util::CountDownLatch>(
-                            new util::CountDownLatch(1));
+                    listener->initialListFetchedLatch .set(boost::shared_ptr<util::CountDownLatch>(
+                            new util::CountDownLatch(1)));
                     std::auto_ptr<protocol::ClientMessage> clientMessage = protocol::codec::ClientAddMembershipListenerCodec::encodeRequest(
                             false);
                     boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(listener->client,

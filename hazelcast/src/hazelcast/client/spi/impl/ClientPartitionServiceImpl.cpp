@@ -75,8 +75,8 @@ namespace hazelcast {
                                                                     new Address(address)));
                                                         }
                                         }
-                            partitionCount = this->partitions.size();
-                            lastPartitionStateVersion = partitionStateVersion;
+                            partitionCount .set(this->partitions.size());
+                            lastPartitionStateVersion .set(partitionStateVersion);
                             if (logger.isFinestEnabled()) {
                                 logger.finest() << "Processed partition response. partitionStateVersion : "
                                                 << (partitionStateVersionExist ? util::IOUtil::to_string<int32_t>(
@@ -97,7 +97,7 @@ namespace hazelcast {
                 void ClientPartitionServiceImpl::listenPartitionTable(
                         const boost::shared_ptr<connection::Connection> &ownerConnection) {
                     //when we connect to cluster back we need to reset partition state version
-                    lastPartitionStateVersion = -1;
+                    lastPartitionStateVersion.set( -1);
                     if (ownerConnection->getConnectedServerVersion() >=
                         client::impl::BuildInfo::calculateVersion("3.9")) {
                         //Servers after 3.9 supports listeners

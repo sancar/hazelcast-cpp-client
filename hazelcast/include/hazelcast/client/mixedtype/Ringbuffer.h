@@ -203,7 +203,7 @@ namespace hazelcast {
                 };
 
                 int32_t partitionId;
-                util::Atomic<int64_t> bufferCapacity;
+                boost::shared_ptr<util::Atomic<int64_t> > bufferCapacity;
             };
         }
     }

@@ -43,16 +43,6 @@ namespace hazelcast {
             virtual ~Atomic() {
             }
 
-            Atomic(const Atomic<T> &rhs) {
-                LockGuard lockGuardRhs(rhs.mutex);
-                v = rhs.v;
-            }
-
-            void operator=(const Atomic<T> &rhs) {
-                LockGuard lockGuardRhs(rhs.mutex);
-                v = rhs.v;
-            }
-
             T operator--(int) {
                 LockGuard lockGuard(mutex);
                 return v--;
@@ -78,11 +68,6 @@ namespace hazelcast {
                 LockGuard lockGuard(mutex);
                 v += delta;
                 return v;
-            }
-
-            void operator=(const T &i) {
-                LockGuard lockGuard(mutex);
-                v = i;
             }
 
             void set(const T &i) {
@@ -121,7 +106,7 @@ namespace hazelcast {
 
             bool compareAndSet(const T &compareValue, const T &setValue) {
                 LockGuard lockGuard(mutex);
-                if(compareValue == v){
+                if (compareValue == v) {
                     v = setValue;
                     return true;
                 }
@@ -133,9 +118,14 @@ namespace hazelcast {
                 out << v;
                 return out;
             }
+
         protected:
-            mutable Mutex mutex;
+            Mutex mutex;
             T v;
+        private:
+            Atomic(const Atomic<T> &rhs);
+
+            void operator=(const Atomic<T> &rhs);
         };
     }
 }

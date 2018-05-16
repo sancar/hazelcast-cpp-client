@@ -56,8 +56,8 @@ namespace hazelcast {
 
                 void AwsAddressTranslator::refresh() {
                     try {
-                        privateToPublic = boost::shared_ptr<std::map<std::string, std::string> >(
-                                new std::map<std::string, std::string>(awsClient->getAddresses()));
+                        privateToPublic.set( boost::shared_ptr<std::map<std::string, std::string> >(
+                                new std::map<std::string, std::string>(awsClient->getAddresses())));
                     } catch (exception::IException &e) {
                         util::ILogger::getLogger().warning(std::string("AWS addresses failed to load: ") + e.what());
                     }

@@ -99,7 +99,7 @@ namespace hazelcast {
                     } else {
                         newMap.erase(member.getAddress());
                     }
-                    members = newMap;
+                    members .set(newMap);
                     fireMembershipEvent(event);
                 }
 

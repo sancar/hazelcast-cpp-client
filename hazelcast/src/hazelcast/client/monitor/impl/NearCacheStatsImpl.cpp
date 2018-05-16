@@ -48,7 +48,7 @@ namespace hazelcast {
                 }
 
                 void NearCacheStatsImpl::setOwnedEntryCount(int64_t ownedEntryCount) {
-                    this->ownedEntryCount = ownedEntryCount;
+                    this->ownedEntryCount.set(ownedEntryCount);
                 }
 
                 void NearCacheStatsImpl::incrementOwnedEntryCount() {
@@ -64,7 +64,7 @@ namespace hazelcast {
                 }
 
                 void NearCacheStatsImpl::setOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost) {
-                    this->ownedEntryMemoryCost = ownedEntryMemoryCost;
+                    this->ownedEntryMemoryCost.set(ownedEntryMemoryCost);
                 }
 
                 void NearCacheStatsImpl::incrementOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost) {
@@ -81,7 +81,7 @@ namespace hazelcast {
 
                 // just for testing
                 void NearCacheStatsImpl::setHits(int64_t hits) {
-                    this->hits = hits;
+                    this->hits.set(hits);
                 }
 
                 void NearCacheStatsImpl::incrementHits() {
@@ -94,7 +94,7 @@ namespace hazelcast {
 
                 // just for testing
                 void NearCacheStatsImpl::setMisses(int64_t misses) {
-                    this->misses = misses;
+                    this->misses.set(misses);
                 }
 
                 void NearCacheStatsImpl::incrementMisses() {
@@ -135,11 +135,11 @@ namespace hazelcast {
 
                 void NearCacheStatsImpl::addPersistence(int64_t duration, int32_t writtenBytes, int32_t keyCount) {
                     ++persistenceCount;
-                    lastPersistenceTime = util::currentTimeMillis();
-                    lastPersistenceDuration = duration;
-                    lastPersistenceWrittenBytes = writtenBytes;
-                    lastPersistenceKeyCount = keyCount;
-                    lastPersistenceFailure = "";
+                    lastPersistenceTime.set(util::currentTimeMillis());
+                    lastPersistenceDuration.set(duration);
+                    lastPersistenceWrittenBytes.set(writtenBytes);
+                    lastPersistenceKeyCount.set(keyCount);
+                    lastPersistenceFailure.set("");
                 }
 
                 int64_t NearCacheStatsImpl::getLastPersistenceTime() {

@@ -38,7 +38,7 @@ namespace hazelcast {
             , buffer(new char[bufferSize])
             , byteBuffer(buffer, bufferSize)
             , builder(connection) {
-		        lastReadTimeMillis = util::currentTimeMillis();
+		        lastReadTimeMillis.set(util::currentTimeMillis());
             }
 
             ReadHandler::~ReadHandler() {
@@ -50,7 +50,7 @@ namespace hazelcast {
             }
 
             void ReadHandler::handle() {
-                lastReadTimeMillis = util::currentTimeMillis();
+                lastReadTimeMillis.set(util::currentTimeMillis());
                 try {
                     byteBuffer.readFrom(connection.getSocket());
                 } catch (exception::IOException &e) {
