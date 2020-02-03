@@ -24,7 +24,7 @@ namespace hazelcast {
                 std::ostringstream out;
                 out << testInfo->test_case_name() << "_" << testInfo->name();
                 testName = out.str();
-                logger.reset(new util::ILogger(testName, testName, "TestVersion", config::LoggerConfig()));
+                logger.reset(new util::ILogger(testInfo->name(), testName, "TestVersion", config::LoggerConfig()));
             }
 
             util::ILogger &ClientTestSupport::getLogger() {
