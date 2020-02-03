@@ -32,12 +32,6 @@ namespace hazelcast {
             namespace impl {
                 impl::ClientClusterServiceImpl::ClientClusterServiceImpl(hazelcast::client::spi::ClientContext &client)
                         : client(client) {
-                    ClientConfig &config = client.getClientConfig();
-                    const std::set<std::shared_ptr<MembershipListener> > &membershipListeners = config.getManagedMembershipListeners();
-
-                    for (const std::shared_ptr<MembershipListener> &listener : membershipListeners) {
-                                    addMembershipListenerWithoutInit(listener);
-                                }
                 }
 
                 std::string ClientClusterServiceImpl::addMembershipListenerWithoutInit(
@@ -90,6 +84,13 @@ namespace hazelcast {
 
                 void ClientClusterServiceImpl::start() {
                     clientMembershipListener.reset(new ClientMembershipListener(client));
+
+                    ClientConfig &config = client.getClientConfig();
+                    const std::set<std::shared_ptr<MembershipListener> > &membershipListeners = config.getManagedMembershipListeners();
+
+                    for (const std::shared_ptr<MembershipListener> &listener : membershipListeners) {
+                        addMembershipListenerWithoutInit(listener);
+                    }
                 }
 
                 void ClientClusterServiceImpl::handleMembershipEvent(const MembershipEvent &event) {
