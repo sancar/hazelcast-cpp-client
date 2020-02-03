@@ -37,6 +37,7 @@ namespace hazelcast {
 
         HazelcastClient::HazelcastClient(const ClientConfig &config) : clientImpl(
                 new impl::HazelcastClientInstanceImpl(config)) {
+            clientImpl->start();
         }
 
         const std::string &HazelcastClient::getName() const {
@@ -54,7 +55,6 @@ namespace hazelcast {
         IAtomicLong HazelcastClient::getIAtomicLong(const std::string &name) {
             return clientImpl->getIAtomicLong(name);
         }
-
 
         std::shared_ptr<crdt::pncounter::PNCounter> HazelcastClient::getPNCounter(const std::string &name) {
             return clientImpl->getPNCounter(name);
