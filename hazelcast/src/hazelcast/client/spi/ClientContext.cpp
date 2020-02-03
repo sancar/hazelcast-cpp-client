@@ -27,99 +27,106 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
-            ClientContext::ClientContext(client::HazelcastClient &hazelcastClient) : hazelcastClient(
-                    *hazelcastClient.clientImpl) {
+            ClientContext::ClientContext() {}
+
+            ClientContext::ClientContext(const client::HazelcastClient &hazelcastClient) : hazelcastClient(
+                    hazelcastClient.clientImpl) {
             }
 
-            ClientContext::ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient)
+            ClientContext::ClientContext(
+                    const std::shared_ptr<client::impl::HazelcastClientInstanceImpl> &hazelcastClient)
                     : hazelcastClient(hazelcastClient) {
             }
 
             serialization::pimpl::SerializationService &ClientContext::getSerializationService() {
-                return hazelcastClient.serializationService;
+                return hazelcastClient->serializationService;
             }
 
             ClientClusterService &ClientContext::getClientClusterService() {
-                return hazelcastClient.clusterService;
+                return hazelcastClient->clusterService;
             }
 
             ClientInvocationService &ClientContext::getInvocationService() {
-                return *hazelcastClient.invocationService;
+                return *hazelcastClient->invocationService;
             }
 
             ClientConfig &ClientContext::getClientConfig() {
-                return hazelcastClient.clientConfig;
+                return hazelcastClient->clientConfig;
             }
 
             ClientPartitionService &ClientContext::getPartitionService() {
-                return *hazelcastClient.partitionService;
+                return *hazelcastClient->partitionService;
             }
 
             LifecycleService &ClientContext::getLifecycleService() {
-                return hazelcastClient.lifecycleService;
+                return hazelcastClient->lifecycleService;
             }
 
             ClientListenerService &ClientContext::getClientListenerService() {
-                return *hazelcastClient.listenerService;
+                return *hazelcastClient->listenerService;
             }
 
             connection::ClientConnectionManagerImpl &ClientContext::getConnectionManager() {
-                return *hazelcastClient.connectionManager;
+                return *hazelcastClient->connectionManager;
             }
 
             internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() {
-                return *hazelcastClient.nearCacheManager;
+                return *hazelcastClient->nearCacheManager;
             }
 
             ClientProperties &ClientContext::getClientProperties() {
-                return hazelcastClient.clientProperties;
+                return hazelcastClient->clientProperties;
             }
 
             Cluster &ClientContext::getCluster() {
-                return hazelcastClient.cluster;
+                return hazelcastClient->cluster;
             }
 
             std::shared_ptr<impl::sequence::CallIdSequence> &ClientContext::getCallIdSequence() const {
-                return hazelcastClient.callIdSequence;
+                return hazelcastClient->callIdSequence;
             }
 
             const protocol::ClientExceptionFactory &ClientContext::getClientExceptionFactory() const {
-                return hazelcastClient.getExceptionFactory();
+                return hazelcastClient->getExceptionFactory();
             }
 
             const std::string &ClientContext::getName() const {
-                return hazelcastClient.getName();
+                return hazelcastClient->getName();
             }
 
             impl::ClientExecutionServiceImpl &ClientContext::getClientExecutionService() const {
-                return *hazelcastClient.executionService;
+                return *hazelcastClient->executionService;
             }
 
             void ClientContext::onClusterConnect(const std::shared_ptr<connection::Connection> &ownerConnection) {
-                hazelcastClient.onClusterConnect(ownerConnection);
+                hazelcastClient->onClusterConnect(ownerConnection);
             }
 
             const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &
             ClientContext::getLockReferenceIdGenerator() {
-                return hazelcastClient.getLockReferenceIdGenerator();
+                return hazelcastClient->getLockReferenceIdGenerator();
             }
 
             std::shared_ptr<client::impl::HazelcastClientInstanceImpl>
                     ClientContext::getHazelcastClientImplementation() {
-                std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl = hazelcastClient.shared_from_this();
-                return clientImpl.lock();
+                return hazelcastClient;
+            }
+
+            void ClientContext::setClientImplementation(
+                    const std::shared_ptr<client::impl::HazelcastClientInstanceImpl> &clientImpl) {
+                hazelcastClient = clientImpl;
             }
 
             spi::ProxyManager &ClientContext::getProxyManager() {
-                return hazelcastClient.getProxyManager();
+                return hazelcastClient->getProxyManager();
             }
 
             util::ILogger &ClientContext::getLogger() {
-                return *hazelcastClient.logger;
+                return *hazelcastClient->logger;
             }
 
             client::impl::statistics::Statistics &ClientContext::getClientstatistics() {
-                return *hazelcastClient.statistics;
+                return *hazelcastClient->statistics;
             }
 
         }

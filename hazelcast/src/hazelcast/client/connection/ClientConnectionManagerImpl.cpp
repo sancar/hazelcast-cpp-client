@@ -812,13 +812,8 @@ namespace hazelcast {
                 return "ClientConnectionManagerImpl::ConnectToClusterTask";
             }
 
-            ClientConnectionManagerImpl::ShutdownTask::ShutdownTask(spi::ClientContext &client)
-            : logger(client.getLogger()) {
-                std::shared_ptr<impl::HazelcastClientInstanceImpl> hazelcastClientImplementation =
-                        client.getHazelcastClientImplementation();
-                if (hazelcastClientImplementation.get()) {
-                    clientImpl = hazelcastClientImplementation;
-                }
+            ClientConnectionManagerImpl::ShutdownTask::ShutdownTask(spi::ClientContext &client) : clientImpl(
+                    client.getHazelcastClientImplementation()), logger(client.getLogger()) {
             }
 
             void ClientConnectionManagerImpl::ShutdownTask::run() {

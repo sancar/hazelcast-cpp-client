@@ -74,7 +74,12 @@ namespace hazelcast {
             private:
                 void waitForRequestToBeSend() {
                     std::shared_ptr<spi::impl::ClientInvocationFuture> future = internal::ClientDelegatingFuture<V>::getFuture();
-                    future->getInvocation()->getSendConnectionOrWait();
+                    auto invocation = future->getInvocation();
+                    if (!invocation.get()) {
+                        return;
+                    }
+
+                    invocation->getSendConnectionOrWait();
                 }
 
                 bool invokeCancelRequest(bool mayInterruptIfRunning) {

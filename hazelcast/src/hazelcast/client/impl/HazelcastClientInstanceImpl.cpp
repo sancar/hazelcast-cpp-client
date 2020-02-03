@@ -55,13 +55,29 @@ namespace hazelcast {
 
             HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(const ClientConfig &config)
                     : clientConfig(config), clientProperties(const_cast<ClientConfig &>(config).getProperties()),
-                      shutdownLatch(1), clientContext(*this),
+                      shutdownLatch(1),
                       serializationService(clientConfig.getSerializationConfig()), clusterService(clientContext),
                       transactionManager(clientContext, *clientConfig.getLoadBalancer()), cluster(clusterService),
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(), shutdownLatch,
                                        clientConfig.getLoadBalancer(), cluster), proxyManager(clientContext),
                       id(++CLIENT_ID), TOPIC_RB_PREFIX("_hz_rb_") {
-                const std::shared_ptr<std::string> &name = config.getInstanceName();
+            }
+
+            HazelcastClientInstanceImpl::~HazelcastClientInstanceImpl() {
+                lifecycleService.shutdown();
+                /**
+                 * We can not depend on the destruction order of the variables. lifecycleService may be destructed later
+                 * than the clientContext which is accessed by different service threads, hence we need to explicitly wait
+                 * for shutdown completion.
+                 */
+                shutdownLatch.await();
+            }
+
+
+            void HazelcastClientInstanceImpl::start() {
+                clientContext.setClientImplementation(shared_from_this());
+
+                const std::shared_ptr<std::string> &name = clientConfig.getInstanceName();
                 if (name.get() != NULL) {
                     instanceName = *name;
                 } else {
@@ -89,8 +105,6 @@ namespace hazelcast {
 
 
                 connectionManager = initConnectionManagerService(addressProviders);
-
-
 
                 partitionService.reset(new spi::impl::ClientPartitionServiceImpl(clientContext));
 
@@ -126,17 +140,6 @@ namespace hazelcast {
                     throw exception::IllegalStateException("HazelcastClientInstanceImpl::initLogger", ia.what());
                 }
             }
-
-            HazelcastClientInstanceImpl::~HazelcastClientInstanceImpl() {
-                lifecycleService.shutdown();
-                /**
-                 * We can not depend on the destruction order of the variables. lifecycleService may be destructed later
-                 * than the clientContext which is accessed by different service threads, hence we need to explicitly wait
-                 * for shutdown completion.
-                 */
-                shutdownLatch.await();
-            }
-
 
             ClientConfig &HazelcastClientInstanceImpl::getClientConfig() {
                 return clientConfig;

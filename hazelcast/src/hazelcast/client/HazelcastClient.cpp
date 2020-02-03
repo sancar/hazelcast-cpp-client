@@ -32,6 +32,7 @@
 namespace hazelcast {
     namespace client {
         HazelcastClient::HazelcastClient() : clientImpl(new impl::HazelcastClientInstanceImpl(ClientConfig())) {
+            clientImpl->start();
         }
 
         HazelcastClient::HazelcastClient(const ClientConfig &config) : clientImpl(

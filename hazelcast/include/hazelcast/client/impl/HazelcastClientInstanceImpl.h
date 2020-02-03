@@ -130,6 +130,8 @@ namespace hazelcast {
                 */
                 ~HazelcastClientInstanceImpl();
 
+                void start();
+
                 /**
                  * Returns the name of this Hazelcast instance.
                  *
