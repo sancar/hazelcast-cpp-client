@@ -5,7 +5,6 @@
 [submodule "external/include/asio"]
 	path = external/include/asio
 	url = https://github.com/chriskohlhoff/asio.git
-	branch = 1.14.0
 [submodule "external/include/easyloggingpp"]
 	path = external/include/easyloggingpp
 	url = https://github.com/amrayn/easyloggingpp.git
