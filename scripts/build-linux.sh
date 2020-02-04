@@ -36,7 +36,7 @@ echo "Code coverage is ON. Cmake flag: ${HZ_COVERAGE_STRING}"
 fi
 
 # Let the submodule code be downloaded
-git submodule update --init
+#git submodule update --init
 
 rm -rf ${BUILD_DIR}
 mkdir ${BUILD_DIR}
