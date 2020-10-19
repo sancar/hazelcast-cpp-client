@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <hazelcast/client/Hazelcast.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
 
@@ -56,14 +57,53 @@ namespace hazelcast {
     }
 }
 
-int main() {
-    hazelcast::client::HazelcastClient hz;
+int main(int argc, char **argv) {
+    hazelcast::Hazelcast hz(
+            "/Users/sancar/.m2/repository/com/hazelcast/hazelcast/4.1-SNAPSHOT/hazelcast-4.1-SNAPSHOT.jar");
+    std::shared_ptr<hazelcast::HazelcastInstance> member1 = hz.newHazelcastInstance();
+    std::shared_ptr<hazelcast::HazelcastInstance> member2 = hz.newHazelcastInstance();
 
-    auto map = hz.getMap("map");
-    map->put("foo", Person{"bar", true, 40}).get();
-    std::cout << *(map->get<std::string, Person>("foo").get()) << std::endl;
+    std::cout << std::endl;
+    std::cout << member1->getName() << std::endl;
+    std::cout << member2->getName() << std::endl;
+    std::cout << std::endl;
 
-    std::cout << "Finished" << std::endl;
 
-    return 0;
+    hazelcast::client::HazelcastClient client;
+    std::shared_ptr<hazelcast::client::IMap> clientMap = client.getMap("test");
+
+    std::shared_ptr<hazelcast::IMap> memberMap = member1->getMap("test");
+    memberMap->put<std::string, Person>("foo", Person{"Ihsan", true, 20});
+
+    boost::optional<Person> person = clientMap->get<std::string, Person>("foo").get();
+    if (person.has_value()) {
+        std::cout << std::endl << "Get from client map " << person.get() << std::endl << std::endl;
+    } else {
+        std::cout << std::endl << "Get from client map Empty" << std::endl << std::endl;
+    }
+
+
+    std::shared_ptr<hazelcast::HazelcastInstance> javaBasedClient = hz.newHazelcastClient();
+    std::shared_ptr<hazelcast::IMap> javaBasedClientMap = javaBasedClient->getMap("test");
+    boost::optional<Person> person2 = javaBasedClientMap->put<std::string, Person>("foo", Person{"Sancar", true, 30});
+    javaBasedClientMap->put<std::string, Person>("foo", Person{"Sancar", true, 30});
+    if (person2.has_value()) {
+        std::cout << std::endl << "Put from java based client map " << person2.get() << std::endl << std::endl;
+    } else {
+        std::cout << std::endl << "Put from java based client map Empty" << std::endl << std::endl;
+    }
+
+    person = javaBasedClientMap->get<std::string, Person>("foo");
+    if (person.has_value()) {
+        std::cout << std::endl << "Get from java based client map " << person.get() << std::endl << std::endl;
+    } else {
+        std::cout << std::endl << "Get from java based client map Empty" << std::endl << std::endl;
+    }
+
+    client.shutdown();
+    javaBasedClient->shutdown();
+    member1->shutdown();
+    member2->shutdown();
+
+    std::cout << "TEST FINISH" << std::endl;
 }

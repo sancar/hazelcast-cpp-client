@@ -124,6 +124,18 @@ ENDIF()
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(BOOST_HINTS "C:\\\\Boost")
 endif ()
+
+#find_package(JAVA REQUIRED)
+#find_package(JNI REQUIRED)
+
+set(JAVA_HOME "/Library/Java/JavaVirtualMachines/jdk1.8.0_251.jdk/Contents/Home/")
+set (JLI_LIBRARY "${JAVA_HOME}/jre/lib/jli/libjli.dylib")
+set(JNI_INCLUDE_DIRS "${JAVA_HOME}/include/;${JAVA_HOME}/include/darwin/")
+
+message(STATUS "JNI_INCLUDE_DIRS " ${JNI_INCLUDE_DIRS})
+include_directories(${JNI_INCLUDE_DIRS})
+link_libraries(${JLI_LIBRARY})
+
 find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono HINTS ${BOOST_HINTS})
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(Boost::thread Boost::chrono)
@@ -165,7 +177,7 @@ message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "APPLE ENVIRONMENT DETECTED")
 
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror -fsanitize=address -fno-omit-frame-pointer")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror -fno-omit-frame-pointer")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall")
 
 	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${EXTERNAL_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
