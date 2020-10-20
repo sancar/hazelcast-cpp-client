@@ -691,7 +691,7 @@ namespace hazelcast {
                     ASSERT_THROW(cp_structure_->try_lock().get(), exception::DistributedObjectDestroyedException);
                 }
 
-                TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown) {
+                TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown_DISABLED) {
                     HazelcastClient c(getConfig().setClusterName(client->getClientConfig().getClusterName()));
                     auto proxy_name = getTestName();
                     auto l = c.get_cp_subsystem().get_lock(proxy_name);

@@ -49,6 +49,7 @@ public:
 
 int main(int argc, char **argv) {
     const char *serverAddress = "127.0.0.1";
+/*
     int port = 9701;
 
     auto transport = std::make_shared<TBufferedTransport>(std::make_shared<TSocket>(serverAddress, port));
@@ -61,6 +62,7 @@ int main(int argc, char **argv) {
     }
 
     remoteController = std::make_shared<RemoteControllerClient>(std::make_shared<TBinaryProtocol>(transport));
+*/
 
     g_srvFactory = new HazelcastServerFactory(serverAddress,"hazelcast/test/resources/hazelcast.xml");
 

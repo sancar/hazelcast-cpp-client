@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/Hazelcast.h>
+#include <hazelcast/Hazelcast.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
 
@@ -48,7 +48,7 @@ void test_multiple_threads(hazelcast::Hazelcast &hz, std::function<void(int key,
     }
     auto end = std::chrono::steady_clock::now();
     auto duration_msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "Total time: " << duration_msec << " msecs. " << ((double) num_threads * num_ops * 1000 / duration_msec) << " ops/sec.";
+    std::cout << "Total time: " << duration_msec << " msecs. " << ((double) num_threads * num_ops * 1000 / duration_msec) << " ops/sec.\n\n";
 }
 
 std::ostream &operator<<(std::ostream &os, const Person &person) {
@@ -152,6 +152,8 @@ int main(int argc, char **argv) {
     test_multiple_threads(hz, [=](int key, const std::vector<hazelcast::byte> &value) {
         memberMap->put(key, value);
     }, num_threads, num_ops, object_size);
+
+    liteMember->shutdown();
 
     std::cout << "Java client:\n";
     test_multiple_threads(hz, [=](int key, const std::vector<hazelcast::byte> &value) {

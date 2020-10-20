@@ -1330,7 +1330,7 @@ namespace hazelcast {
                         clientConfig.setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "10");
                         clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
                         auto member = server.getMember();
-                        clientConfig.getNetworkConfig().addAddress(Address(member.host, member.port)).setConnectionAttemptPeriod(10 * 1000);
+                        clientConfig.getNetworkConfig().addAddress(Address("127.0.0.1", 5701)).setConnectionAttemptPeriod(10 * 1000);
                         clientConfig.setLogLevel(FINEST);
 
                         Stats stats;
@@ -1564,7 +1564,7 @@ namespace hazelcast {
                 shutdown();
             }
 
-            const remote::Member &HazelcastServer::getMember() const {
+            const std::shared_ptr<HazelcastInstance> &HazelcastServer::getMember() const {
                 return member;
             }
 

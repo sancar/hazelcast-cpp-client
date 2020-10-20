@@ -568,6 +568,9 @@ namespace hazelcast {
             extern HazelcastServerFactory *g_srvFactory;
             extern std::shared_ptr<RemoteControllerClient> remoteController;
 
+            hazelcast::Hazelcast HazelcastServerFactory::factory_(
+                    "/Users/ihsan/.m2/repository/com/hazelcast/hazelcast/4.1-SNAPSHOT/hazelcast-4.1-SNAPSHOT.jar:/Users/ihsan/.m2/repository/com/hazelcast/hazelcast/4.1-SNAPSHOT/hazelcast-4.1-SNAPSHOT-tests.jar");
+
             HazelcastServerFactory::HazelcastServerFactory(const std::string &serverXmlConfigFilePath)
                     : HazelcastServerFactory::HazelcastServerFactory(g_srvFactory->getServerAddress(),
                                                                      serverXmlConfigFilePath) {
@@ -584,30 +587,27 @@ namespace hazelcast {
                                                                               << logger.getInstanceName()).build();
                 }
 
-                std::string xmlConfig = readFromXmlFile(serverXmlConfigFilePath);
-
-                remote::Cluster cluster;
-                remoteController->createClusterKeepClusterName(cluster, HAZELCAST_VERSION, xmlConfig);
-
-                this->clusterId = cluster.id;
+                xml_config_ = readFromXmlFile(serverXmlConfigFilePath);
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
-                remoteController->shutdownCluster(clusterId);
+                factory_.shutdownAll();
             }
 
-            remote::Member HazelcastServerFactory::startServer() {
-                remote::Member member;
-                remoteController->startMember(member, clusterId);
-                return member;
+            std::shared_ptr<HazelcastInstance> HazelcastServerFactory::startServer() {
+                if (xml_config_.empty()) {
+                    return factory_.newHazelcastInstance();
+                }
+                return factory_.newHazelcastInstance(xml_config_);
             }
 
-            bool HazelcastServerFactory::shutdownServer(const remote::Member &member) {
-                return remoteController->shutdownMember(clusterId, member.uuid);
+            bool HazelcastServerFactory::shutdownServer(const std::shared_ptr<HazelcastInstance> &member) {
+                member->shutdown();
+                return true;
             }
 
-            bool HazelcastServerFactory::terminateServer(const remote::Member &member) {
-                return remoteController->terminateMember(clusterId, member.uuid);
+            bool HazelcastServerFactory::terminateServer(const std::shared_ptr<HazelcastInstance> &member) {
+                return shutdownServer(member);
             }
 
             const std::string &HazelcastServerFactory::getServerAddress() {

@@ -42,13 +42,13 @@ namespace hazelcast {
 
                 ~HazelcastServer();
 
-                const remote::Member &getMember() const;
+                const std::shared_ptr<HazelcastInstance> &getMember() const;
 
             private:
                 HazelcastServerFactory & factory;
                 std::atomic_bool isStarted;
                 std::atomic_bool isShutdown;
-                remote::Member member;
+                std::shared_ptr<HazelcastInstance> member;
                 std::shared_ptr<util::ILogger> logger;
             };
         }

@@ -25,6 +25,7 @@
 #include <memory>
 #include <ostream>
 
+#include <hazelcast/Hazelcast.h>
 #include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/Address.h>
 
@@ -45,11 +46,11 @@ namespace hazelcast {
 
                 const std::string& getServerAddress();
 
-                remote::Member startServer();
+                std::shared_ptr<HazelcastInstance> startServer();
 
-                bool shutdownServer(const remote::Member &member);
+                bool shutdownServer(const std::shared_ptr<HazelcastInstance> &member);
 
-                bool terminateServer(const remote::Member &member);
+                bool terminateServer(const std::shared_ptr<HazelcastInstance> &member);
 
                 const std::string &getClusterId() const;
 
@@ -59,6 +60,8 @@ namespace hazelcast {
                 util::ILogger logger;
                 std::string serverAddress;
                 std::string clusterId;
+                std::string xml_config_;
+                static Hazelcast factory_;
 
                 std::string readFromXmlFile(const std::string &xmlFilePath);
             };
