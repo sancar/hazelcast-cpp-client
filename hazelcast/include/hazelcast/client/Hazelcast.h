@@ -196,7 +196,7 @@ namespace hazelcast {
             JNIEnv *pEnv = GetJniEnv(vm);
             jstring mapName = pEnv->NewStringUTF(name.c_str());
             jobject obj = pEnv->CallObjectMethod(object, getMapId, mapName);
-
+            pEnv->DeleteLocalRef(mapName);
             if (isMember) {
                 return std::shared_ptr<IMap>(
                         new IMap(obj, "com/hazelcast/map/impl/proxy/MapProxyImpl", vm, serializationService));
@@ -254,9 +254,19 @@ namespace hazelcast {
             if (newHazelcastInstanceId == nullptr) {
                 throw std::exception();
             }
+            newHazelcastInstanceWithConfigId = jniEnv->GetStaticMethodID(cls, "newHazelcastInstanceWithConfig",
+                                                               "(Ljava/lang/String;)Lcom/hazelcast/core/HazelcastInstance;");
+            if (newHazelcastInstanceWithConfigId == nullptr) {
+                throw std::exception();
+            }
             newHazelcastClientId = jniEnv->GetStaticMethodID(clientCls, "newHazelcastClient",
                                                           "()Lcom/hazelcast/core/HazelcastInstance;");
             if (newHazelcastClientId == nullptr) {
+                throw std::exception();
+            }
+            newHazelcastClientWithConfigId = jniEnv->GetStaticMethodID(clientCls, "newHazelcastClientWithConfig",
+                                                             "(Ljava/lang/String;)Lcom/hazelcast/core/HazelcastInstance;");
+            if (newHazelcastClientWithConfigId == nullptr) {
                 throw std::exception();
             }
             shutdownAllId = jniEnv->GetStaticMethodID(cls, "shutdownAll", "()V");
@@ -266,8 +276,18 @@ namespace hazelcast {
         }
 
         std::shared_ptr<HazelcastInstance> newHazelcastInstance() {
-            
             jobject object = GetJniEnv(vm)->CallStaticObjectMethod(cls, newHazelcastInstanceId);
+            return std::shared_ptr<HazelcastInstance>(new HazelcastInstance(object, vm, true));
+        }
+
+        std::shared_ptr<HazelcastInstance> newHazelcastInstance(const std::string& xml) {
+            JNIEnv *pEnv = GetJniEnv(vm);
+            jstring xmlStr = pEnv->NewStringUTF(xml.c_str());
+            jobject object = pEnv->CallStaticObjectMethod(cls, newHazelcastInstanceWithConfigId, xmlStr);
+            if(pEnv->ExceptionOccurred()) {
+                pEnv->ExceptionDescribe();
+            }
+            pEnv->DeleteLocalRef(xmlStr);
             return std::shared_ptr<HazelcastInstance>(new HazelcastInstance(object, vm, true));
         }
 
@@ -277,6 +297,13 @@ namespace hazelcast {
             return std::shared_ptr<HazelcastInstance>(new HazelcastInstance(obj, vm, false));
         }
 
+        std::shared_ptr<HazelcastInstance> newHazelcastClient(const std::string& xml) {
+            JNIEnv *pEnv = GetJniEnv(vm);
+            jstring xmlStr = pEnv->NewStringUTF(xml.c_str());
+            jobject obj = pEnv->CallStaticObjectMethod(clientCls, newHazelcastClientWithConfigId, xmlStr);
+            pEnv->DeleteLocalRef(xmlStr);
+            return std::shared_ptr<HazelcastInstance>(new HazelcastInstance(obj, vm, false));
+        }
 
         void shutdownAll() {
             GetJniEnv(vm)->CallStaticVoidMethod(cls, shutdownAllId);
@@ -305,7 +332,9 @@ namespace hazelcast {
         jclass cls;
         jclass clientCls;
         jmethodID newHazelcastInstanceId;
+        jmethodID newHazelcastInstanceWithConfigId;
         jmethodID newHazelcastClientId;
+        jmethodID newHazelcastClientWithConfigId;
         jmethodID shutdownAllId;
     };
 
