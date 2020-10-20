@@ -29,38 +29,54 @@
 
 namespace hazelcast {
 
+
+    JNIEnv *GetJniEnv(JavaVM *jvm) {
+        JNIEnv *env;
+
+        jint attachRes = jvm->AttachCurrentThread(reinterpret_cast<void **>(&env), NULL);
+
+        if (attachRes != JNI_OK) {
+            throw std::runtime_error("attach failed");
+        }
+
+        return env;
+    }
+
     class HAZELCAST_API IMap {
     public:
-        IMap(jobject object, const char *name, JNIEnv *env,
+        IMap(jobject object, const char *name, JavaVM *vm,
              std::shared_ptr<client::serialization::pimpl::SerializationService> serializationService)
-                : env(env), serializationService(serializationService), object(object) {
-            cls = env->FindClass(name);
+                : vm(vm), serializationService(serializationService), object(object) {
+            JNIEnv *pEnv = GetJniEnv(vm);
+            cls = pEnv->FindClass(name);
             if (cls == nullptr) {
                 throw std::exception();
             }
 
-            putId = env->GetMethodID(cls, "putForC", "([B[B)[B");
+            putId = pEnv->GetMethodID(cls, "putForC", "([B[B)[B");
             if (putId == nullptr) {
                 throw std::exception();
             }
 
-            getId = env->GetMethodID(cls, "getForC", "([B)[B");
+            getId = pEnv->GetMethodID(cls, "getForC", "([B)[B");
             if (getId == nullptr) {
                 throw std::exception();
             }
         }
 
         ~IMap() {
-            env->DeleteLocalRef(object);
-            env->DeleteLocalRef(cls);
+            JNIEnv *pEnv = GetJniEnv(vm);
+            pEnv->DeleteLocalRef(object);
+            pEnv->DeleteLocalRef(cls);
         }
 
         template<typename K, typename V>
         boost::optional<V> get(const K &key) {
             client::serialization::pimpl::Data data = toData(key);
             jbyteArray keyByteArray = convertDataToJByteArray(data);
-            jbyteArray response = (jbyteArray) env->CallObjectMethod(object, getId, keyByteArray);
-            env->DeleteLocalRef(keyByteArray);
+            JNIEnv *pEnv = GetJniEnv(vm);
+            jbyteArray response = (jbyteArray) pEnv->CallObjectMethod(object, getId, keyByteArray);
+            pEnv->DeleteLocalRef(keyByteArray);
 
             return convertJByteArrayToObject<V>(response);
         }
@@ -71,15 +87,16 @@ namespace hazelcast {
             client::serialization::pimpl::Data valueData = toData(value);
             jbyteArray keyByteArray = convertDataToJByteArray(keyData);
             jbyteArray valueByteArray = convertDataToJByteArray(valueData);
-            jbyteArray response = (jbyteArray) env->CallObjectMethod(object, putId, keyByteArray, valueByteArray);
-            env->DeleteLocalRef(keyByteArray);
-            env->DeleteLocalRef(valueByteArray);
+            JNIEnv *pEnv = GetJniEnv(vm);
+            jbyteArray response = (jbyteArray) pEnv->CallObjectMethod(object, putId, keyByteArray, valueByteArray);
+            pEnv->DeleteLocalRef(keyByteArray);
+            pEnv->DeleteLocalRef(valueByteArray);
 
             return convertJByteArrayToObject<V>(response);
         }
 
     private:
-        JNIEnv *env;
+        JavaVM* vm;
         std::shared_ptr<client::serialization::pimpl::SerializationService> serializationService;
         jclass cls;
         jobject object;
@@ -102,9 +119,10 @@ namespace hazelcast {
                 return boost::none;
             }
 
-            jsize arrayLength = env->GetArrayLength(value);
+            JNIEnv *pEnv = GetJniEnv(vm);
+            jsize arrayLength = pEnv->GetArrayLength(value);
             jboolean iscopy = JNI_TRUE;
-            jbyte *arrayElements = env->GetByteArrayElements(value, &iscopy);
+            jbyte *arrayElements = pEnv->GetByteArrayElements(value, &iscopy);
             byte *bytes = reinterpret_cast<byte *>(arrayElements);
 
 
@@ -115,15 +133,16 @@ namespace hazelcast {
             hazelcast::client::serialization::pimpl::Data data(responseData);
             boost::optional<V> responseObject = toObject<V>(responseData);
             jint m = 0;
-            env->ReleaseByteArrayElements(value, arrayElements, m);
+            pEnv->ReleaseByteArrayElements(value, arrayElements, m);
 
             return responseObject;
         }
 
         jbyteArray convertDataToJByteArray(client::serialization::pimpl::Data &data) {
             std::vector<byte> byteArray = data.toByteArray();
-            jbyteArray keyByteArray = env->NewByteArray(byteArray.size());
-            env->SetByteArrayRegion(keyByteArray, 0, (jsize) byteArray.size(), (jbyte *) byteArray.data());
+            JNIEnv *pEnv = GetJniEnv(vm);
+            jbyteArray keyByteArray = pEnv->NewByteArray(byteArray.size());
+            pEnv->SetByteArrayRegion(keyByteArray, 0, (jsize) byteArray.size(), (jbyte *) byteArray.data());
             return keyByteArray;
         }
 
@@ -132,64 +151,67 @@ namespace hazelcast {
 
     class HAZELCAST_API HazelcastInstance {
     public:
-        HazelcastInstance(jobject object, JNIEnv *env, bool isMember)
-                : env(env), serializationService(
+        HazelcastInstance(jobject object, JavaVM *vm, bool isMember)
+                : vm(vm), serializationService(
                 new client::serialization::pimpl::SerializationService(serializationConfig)) {
             this->isMember = isMember;
             this->object = object;
-            this->env = env;
-            cls = env->FindClass("com/hazelcast/core/HazelcastInstance");
+            JNIEnv *pEnv = GetJniEnv(vm);
+            cls = pEnv->FindClass("com/hazelcast/core/HazelcastInstance");
             if (cls == nullptr) {
                 throw std::exception();
             }
 
-            getNameId = env->GetMethodID(cls, "getName", "()Ljava/lang/String;");
+            getNameId = pEnv->GetMethodID(cls, "getName", "()Ljava/lang/String;");
             if (getNameId == nullptr) {
                 throw std::exception();
             }
-            shutdownId = env->GetMethodID(cls, "shutdown", "()V");
+            shutdownId = pEnv->GetMethodID(cls, "shutdown", "()V");
             if (shutdownId == nullptr) {
                 throw std::exception();
             }
-            getMapId = env->GetMethodID(cls, "getMap", "(Ljava/lang/String;)Lcom/hazelcast/map/IMap;");
+            getMapId = pEnv->GetMethodID(cls, "getMap", "(Ljava/lang/String;)Lcom/hazelcast/map/IMap;");
             if (getMapId == nullptr) {
                 throw std::exception();
             }
         };
 
         ~HazelcastInstance() {
-            env->DeleteLocalRef(object);
-            env->DeleteLocalRef(cls);
+            JNIEnv *pEnv = GetJniEnv(vm);
+            pEnv->DeleteLocalRef(object);
+            pEnv->DeleteLocalRef(cls);
         }
 
         std::string getName() const {
-            jstring obj = (jstring) env->CallObjectMethod(object, getNameId);
+            JNIEnv *pEnv = GetJniEnv(vm);
+            jstring obj = (jstring) pEnv->CallObjectMethod(object, getNameId);
             jboolean iscopy = JNI_TRUE;
-            const char *chars = env->GetStringUTFChars(obj, &iscopy);
+            const char *chars = pEnv->GetStringUTFChars(obj, &iscopy);
             std::string name(chars);
-            env->ReleaseStringUTFChars(obj, chars);
+            pEnv->ReleaseStringUTFChars(obj, chars);
             return name;
         }
 
         std::shared_ptr<IMap> getMap(const std::string &name) {
-            jstring mapName = env->NewStringUTF(name.c_str());
-            jobject obj = env->CallObjectMethod(object, getMapId, mapName);
+            JNIEnv *pEnv = GetJniEnv(vm);
+            jstring mapName = pEnv->NewStringUTF(name.c_str());
+            jobject obj = pEnv->CallObjectMethod(object, getMapId, mapName);
 
             if (isMember) {
                 return std::shared_ptr<IMap>(
-                        new IMap(obj, "com/hazelcast/map/impl/proxy/MapProxyImpl", env, serializationService));
+                        new IMap(obj, "com/hazelcast/map/impl/proxy/MapProxyImpl", vm, serializationService));
             } else {
                 return std::shared_ptr<IMap>(
-                        new IMap(obj, "com/hazelcast/client/impl/proxy/ClientMapProxy", env, serializationService));
+                        new IMap(obj, "com/hazelcast/client/impl/proxy/ClientMapProxy", vm, serializationService));
             }
         }
 
         void shutdown() {
-            env->CallObjectMethod(object, shutdownId);
+            GetJniEnv(vm)->CallObjectMethod(object, shutdownId);
         }
 
     private:
-        JNIEnv *env;
+        JavaVM* vm;
         bool isMember;
         client::SerializationConfig serializationConfig;
         std::shared_ptr<client::serialization::pimpl::SerializationService> serializationService;
@@ -204,63 +226,66 @@ namespace hazelcast {
     public:
         explicit Hazelcast(const std::string &hazelcastJarPath) {
             vm_args.version = JNI_VERSION_1_8;
-            optionString = "-Djava.class.path=" + hazelcastJarPath;
+            optionString.append("-Djava.class.path=").append(hazelcastJarPath);
             options[0].optionString = (char *) optionString.c_str();
             vm_args.options = options;
             vm_args.nOptions = 1;
             vm_args.ignoreUnrecognized = JNI_TRUE;
+            if (JNI_GetDefaultJavaVMInitArgs(&vm_args) != JNI_OK) {
+                throw std::exception();
+            }
             JavaVM *javaVM = NULL;
             JNIEnv *jniEnv = NULL;
             jint res = JNI_CreateJavaVM(&javaVM, (void **) &jniEnv, &vm_args);
             if (res != JNI_OK) {
                 throw std::exception();
             }
-            this->env = jniEnv;
             this->vm = javaVM;
-
-            cls = env->FindClass("com/hazelcast/core/Hazelcast");
+            cls = jniEnv->FindClass("com/hazelcast/core/Hazelcast");
             if (cls == nullptr) {
                 throw std::exception();
             }
-            clientCls = env->FindClass("com/hazelcast/client/HazelcastClient");
+            clientCls = jniEnv->FindClass("com/hazelcast/client/HazelcastClient");
             if (clientCls == nullptr) {
                 throw std::exception();
             }
-            newHazelcastInstanceId = env->GetStaticMethodID(cls, "newHazelcastInstance",
+            newHazelcastInstanceId = jniEnv->GetStaticMethodID(cls, "newHazelcastInstance",
                                                             "()Lcom/hazelcast/core/HazelcastInstance;");
             if (newHazelcastInstanceId == nullptr) {
                 throw std::exception();
             }
-            newHazelcastClientId = env->GetStaticMethodID(clientCls, "newHazelcastClient",
+            newHazelcastClientId = jniEnv->GetStaticMethodID(clientCls, "newHazelcastClient",
                                                           "()Lcom/hazelcast/core/HazelcastInstance;");
             if (newHazelcastClientId == nullptr) {
                 throw std::exception();
             }
-            shutdownAllId = env->GetStaticMethodID(cls, "shutdownAll", "()V");
+            shutdownAllId = jniEnv->GetStaticMethodID(cls, "shutdownAll", "()V");
             if (shutdownAllId == nullptr) {
                 throw std::exception();
             }
         }
 
         std::shared_ptr<HazelcastInstance> newHazelcastInstance() {
-            jobject object = env->CallStaticObjectMethod(cls, newHazelcastInstanceId);
-            return std::shared_ptr<HazelcastInstance>(new HazelcastInstance(object, env, true));
+            
+            jobject object = GetJniEnv(vm)->CallStaticObjectMethod(cls, newHazelcastInstanceId);
+            return std::shared_ptr<HazelcastInstance>(new HazelcastInstance(object, vm, true));
         }
 
 
         std::shared_ptr<HazelcastInstance> newHazelcastClient() {
-            jobject obj = env->CallStaticObjectMethod(clientCls, newHazelcastClientId);
-            return std::shared_ptr<HazelcastInstance>(new HazelcastInstance(obj, env, false));
+            jobject obj = GetJniEnv(vm)->CallStaticObjectMethod(clientCls, newHazelcastClientId);
+            return std::shared_ptr<HazelcastInstance>(new HazelcastInstance(obj, vm, false));
         }
 
 
         void shutdownAll() {
-            env->CallStaticVoidMethod(cls, shutdownAllId);
+            GetJniEnv(vm)->CallStaticVoidMethod(cls, shutdownAllId);
         }
 
         ~Hazelcast() {
-            env->DeleteLocalRef(cls);
-            env->DeleteLocalRef(clientCls);
+            JNIEnv *pEnv = GetJniEnv(vm);
+            pEnv->DeleteLocalRef(cls);
+            pEnv->DeleteLocalRef(clientCls);
             jint ok = vm->DetachCurrentThread();
             if (ok != JNI_OK) {
                 std::cout << "Failed to DetachCurrentThread" << std::endl;
@@ -276,7 +301,6 @@ namespace hazelcast {
         JavaVMInitArgs vm_args;
         JavaVMOption options[1];
         std::string optionString;
-        JNIEnv *env;
         JavaVM *vm;
         jclass cls;
         jclass clientCls;
