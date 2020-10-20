@@ -25,7 +25,31 @@ struct Person {
     int32_t age;
 };
 
-void test_multiple_server_threads(std::shared_ptr<hazelcast::IMap> map, int num_threads, int num_ops, size_t object_size);
+void test_multiple_threads(hazelcast::Hazelcast &hz, std::function<void(int key, const std::vector<hazelcast::byte> &)> f, int num_threads, int num_ops, size_t object_size) {
+    std::vector<std::thread> threads;
+    std::vector<hazelcast::byte> value(object_size);
+
+    for (int j = 0; j < num_ops; ++j) {
+        f(j, value);
+    }
+
+    auto start = std::chrono::steady_clock::now();
+    for (int i = 0; i < num_threads; ++i) {
+        threads.emplace_back([=, &hz] () {
+            for (int j = 0; j < num_ops; ++j) {
+                f(j, value);
+            }
+            hz.detach_current_thread();
+        });
+    }
+
+    for (auto &t : threads) {
+        t.join();
+    }
+    auto end = std::chrono::steady_clock::now();
+    auto duration_msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "Total time: " << duration_msec << " msecs. " << ((double) num_threads * num_ops * 1000 / duration_msec) << " ops/sec.";
+}
 
 std::ostream &operator<<(std::ostream &os, const Person &person) {
     os << "name: " << person.name << " male: " << person.male << " age: " << person.age;
@@ -79,6 +103,12 @@ int main(int argc, char **argv) {
             "/Users/ihsan/.m2/repository/com/hazelcast/hazelcast/4.1-SNAPSHOT/hazelcast-4.1-SNAPSHOT.jar");
     std::shared_ptr<hazelcast::HazelcastInstance> member1 = hz.newHazelcastInstance();
     std::shared_ptr<hazelcast::HazelcastInstance> member2 = hz.newHazelcastInstance();
+    std::shared_ptr<hazelcast::HazelcastInstance> liteMember = hz.newHazelcastInstance("<hazelcast xmlns=\"http://www.hazelcast.com/schema/config\"\n"
+                                                                                       "           xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                                                                                       "           xsi:schemaLocation=\"http://www.hazelcast.com/schema/config\n"
+                                                                                       "           http://www.hazelcast.com/schema/config/hazelcast-config-4.1.xsd\">\n"
+                                                                                       "    <lite-member enabled=\"true\"/>\n"
+                                                                                       "</hazelcast>");
 
     std::cout << std::endl;
     std::cout << member1->getName() << std::endl;
@@ -89,9 +119,7 @@ int main(int argc, char **argv) {
     hazelcast::client::HazelcastClient client;
     std::shared_ptr<hazelcast::client::IMap> clientMap = client.getMap("test");
 
-    std::shared_ptr<hazelcast::IMap> memberMap = member1->getMap("test");
-
-    test_multiple_server_threads(memberMap, num_threads, num_ops, object_size);
+    std::shared_ptr<hazelcast::IMap> memberMap = liteMember->getMap("test");
 
     memberMap->put<std::string, Person>("foo", Person{"Ihsan", true, 20});
 
@@ -119,6 +147,22 @@ int main(int argc, char **argv) {
         std::cout << std::endl << "Get from java based client map Empty" << std::endl << std::endl;
     }
 
+
+    std::cout << "Lite member:\n";
+    test_multiple_threads(hz, [=](int key, const std::vector<hazelcast::byte> &value) {
+        memberMap->put(key, value);
+    }, num_threads, num_ops, object_size);
+
+    std::cout << "Java client:\n";
+    test_multiple_threads(hz, [=](int key, const std::vector<hazelcast::byte> &value) {
+        javaBasedClientMap->put(key, value);
+    }, num_threads, num_ops, object_size);
+
+    std::cout << "C++ client:\n";
+    test_multiple_threads(hz, [=](int key, const std::vector<hazelcast::byte> &value) {
+        clientMap->put(key, value).get();
+    }, num_threads, num_ops, object_size);
+
     client.shutdown();
     javaBasedClient->shutdown();
     member1->shutdown();
@@ -127,22 +171,4 @@ int main(int argc, char **argv) {
     std::cout << "TEST FINISH" << std::endl;
 }
 
-void test_multiple_server_threads(std::shared_ptr<hazelcast::IMap> map, int num_threads, int num_ops, size_t object_size) {
-    std::vector<std::thread> threads(num_threads);
-    std::vector<hazelcast::byte> value(object_size);
-    auto start = std::chrono::steady_clock::now();
-    for (int i = 0; i < num_threads; ++i) {
-        threads.emplace_back([=] () {
-            for (int j = 0; j < num_ops; ++j) {
-                map->put(j, value);
-            }
-        });
-    }
 
-    for (auto &t : threads) {
-        t.join();
-    }
-    auto end = std::chrono::steady_clock::now();
-    auto duration_msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "Total time for server api:" << duration_msec << " msecs. " << ((double)num_ops * 1000 / duration_msec) << " ops/sec.";
-}
